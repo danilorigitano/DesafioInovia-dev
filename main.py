@@ -8,7 +8,7 @@ import os
 import sys
 from pathlib import Path
 
-from importa_dados import verificar_e_configurar_dados
+from importa_dados import ImportadorDados
 
 def main():
     """
@@ -18,7 +18,12 @@ def main():
     print("Iniciando processamento...")
     
     # Verificar e configurar dados usando o módulo importa_dados
-    importador = verificar_e_configurar_dados()
+    importador = ImportadorDados()
+    dados_ok = importador.imprimir_relatorio()
+    
+    if not dados_ok:
+        print("\nERRO: Dados necessários não encontrados. Verifique os caminhos e tente novamente.")
+        sys.exit(1)
     
     # Aqui você pode adicionar outras funcionalidades do projeto
     # Exemplo: processamento de imagens, análise de dados, etc.

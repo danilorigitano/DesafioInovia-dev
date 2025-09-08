@@ -5,81 +5,67 @@ Histórico de desenvolvimento do Projeto INOVIA.
 ## Fluxo de Desenvolvimento
 
 ```mermaid
-graph TD
-    A[Início do Projeto] --> B[Setup Inicial]
-    B --> C[Estrutura de Dados]
-    C --> D[Módulo de Importação]
-    D --> E[Sistema de Verificação]
-    E --> F[Relatórios de Status]
-    F --> G[Próximas Funcionalidades]
+graph LR
+    A["🚀 Início"] --> B["⚙️ Setup"]
+    B --> C["📊 Dados"]
+    C --> D["🔍 Validação"]
+    D --> E["📋 Relatórios"]
+    E --> F["🔮 Próximo"]
     
-    B --> B1[Ambiente Virtual]
-    B --> B2[Requirements.txt]
-    B --> B3[Estrutura de Pastas]
+    B --> B1["🐍 Virtual Env"]
+    B --> B2["📦 Dependencies"]
     
-    C --> C1[Imagens Female]
-    C --> C2[Imagens Male]
-    C --> C3[Dados CSV]
+    C --> C1["👩 Female"]
+    C --> C2["👨 Male"]
+    C --> C3["📈 CSV"]
     
-    D --> D1[ImportadorDados Class]
-    D --> D2[Verificação de Caminhos]
-    D --> D3[Carregamento CSV]
+    D --> D1["✅ Verificar"]
+    D --> D2["🎯 Filtrar"]
+    D --> D3["⚖️ Categorizar"]
     
-    E --> E1[Status dos Dados]
-    E --> E2[Contagem de Arquivos]
-    E --> E3[Validação Completa]
+    E --> E1["📊 Stats"]
+    E --> E2["🎨 Visual"]
     
-    F --> F1[Relatório Detalhado]
-    F --> F2[Estatísticas]
-    F --> F3[Status Visual]
+    F --> F1["🖼️ Imagens"]
+    F --> F2["🧮 Analytics"]
     
-    style A fill:#e1f5fe
-    style G fill:#fff3e0
-    style F fill:#e8f5e8
+    classDef done fill:#4CAF50,stroke:#2E7D32,color:#fff
+    classDef next fill:#FF9800,stroke:#F57C00,color:#fff
+    
+    class A,B,C,D,E,B1,B2,C1,C2,C3,D1,D2,D3,E1,E2 done
+    class F,F1,F2 next
 ```
 
 ## Versões
 
-### [0.1.0] - 2025-09-08 - Setup Inicial ✨
+### [0.1.0] - 2025-09-08 - Base Sólida ✨
 
-#### Adicionado
-- **Estrutura base do projeto** com `main.py` como ponto de entrada
-- **Módulo `importa_dados.py`** para gerenciamento de dados
-- **Classe `ImportadorDados`** com funcionalidades completas:
-  - Verificação automática de diretórios e arquivos
-  - Carregamento e validação de dados CSV
-  - Listagem de subpastas de imagens
-  - Geração de estatísticas dos dados
-  - Relatórios detalhados com status visual
-- **Sistema de paths dinâmicos** usando pathlib
-- **Configuração do ambiente** com requirements.txt
-- **Documentação inicial** com README.md
+#### 🔥 Implementado
+- **🎯 Arquitetura modular** com `main.py` como coordenador
+- **📊 Sistema ImportadorDados** para gerenciamento inteligente
+- **🔍 Validação automática** de dados CSV ↔ Pastas de imagens
+- **⚖️ Categorização inteligente** por gênero e posição (Pre/Pos)
+- **📋 Relatórios visuais** com estatísticas em tempo real
 
-#### Funcionalidades Implementadas
-- ✅ Verificação automática de dados female/male
-- ✅ Validação de arquivo CSV com medidas sintéticas
-- ✅ Contagem de pastas e registros
-- ✅ Relatórios coloridos com emojis
-- ✅ Sistema modular e extensível
-
-#### Estrutura de Dados Suportada
-```
-INOVIA_IMAGENS_female/    # Imagens sintéticas femininas
-INOVIA_IMAGENS_male/      # Imagens sintéticas masculinas
-medidas_dados_sinteticos.csv  # Dados de medidas
+#### 🏗️ Funcionalidades Core
+```python
+ImportadorDados():
+├── verificar_dados()          # ✅ Paths e arquivos
+├── carregar_dados_csv()       # 📄 Leitura segura
+├── filtrar_dados_validos()    # 🎯 Correspondência
+├── filtrar_por_genero_posicao() # ⚖️ Categorias
+└── imprimir_relatorio()       # 📊 Status visual
 ```
 
-#### Próximos Passos
-- [ ] Processamento de imagens
-- [ ] Análise de dados sintéticos
-- [ ] Algoritmos de medição
-- [ ] Interface de usuário
-- [ ] Testes automatizados
+#### 📊 Estrutura Suportada
+```
+syn_fXXXXXX-X-Pre/    # 👩 Female Pre
+syn_fXXXXXX-X-Pos/    # 👩 Female Pos  
+syn_mXXXXXX-X-Pre/    # 👨 Male Pre
+syn_mXXXXXX-X-Pos/    # 👨 Male Pos
+```
 
----
-
-**Legenda:**
-- ✨ Nova funcionalidade
-- 🐛 Correção de bug
-- 📝 Documentação
-- 🔧 Manutenção
+#### 🔮 Roadmap
+- 🖼️ **v0.2** - Processamento de imagens
+- 🧮 **v0.3** - Analytics e correlações  
+- 🎛️ **v0.4** - Interface gráfica

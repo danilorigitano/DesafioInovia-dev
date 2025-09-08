@@ -1,18 +1,53 @@
 # Projeto INOVIA 🚀
 
-Sistema modular para processamento e análise de dados de imagens sintéticas com medidas corporais.
+Sistema modular para processamento e análise de dados de imagens sintéticas com medida🚀 **Versão 0.1.0** - Base sólida estabelecida  
+📋 [Ver CHANGELOG.md](CHANGELOG.md) para histórico detalhado com fluxo Mermaidcorporais.
 
 ## 📋 Primeiros Passos do Desenvolvimento
 
-O projeto foi iniciado com foco na **estruturação sólida dos dados** e **verificação automática** do ambiente. As primeiras implementações estabeleceram:
+O projeto começou focando na **validação e estruturação robusta dos dados** como base sólida para futuras funcionalidades.
 
-### ✅ Fundação Implementada
-- **Módulo de Importação**: Sistema robusto para localizar e validar dados
-- **Verificação Automática**: Detecção de pastas de imagens (female/male) e arquivo CSV
-- **Relatórios Dinâmicos**: Status visual com estatísticas em tempo real
-- **Arquitetura Modular**: Base extensível para futuras funcionalidades
+**Por que essa estratégia?**
+- ✅ Detectar problemas de dados **antes** de desenvolver features complexas
+- 🔄 Garantir **integridade** entre CSV e pastas de imagens  
+- 📊 Ter **visibilidade** do que temos disponível para trabalhar
+- 🧩 Criar **base modular** para crescimento organizado
 
-### 🏗️ Estrutura do Projeto
+### 🏗️ O que foi Implementado
+
+**Motor Central: Classe `ImportadorDados`**
+```python
+# Funcionalidades principais desenvolvidas:
+1. 🔍 Verificação automática de paths e arquivos
+2. 📄 Carregamento seguro de CSV com tratamento de erros  
+3. 🎯 Filtragem inteligente (só dados com pasta correspondente)
+4. ⚖️ Categorização por gênero/posição: syn_[f/m]XXXXX-X-[Pre/Pos]
+5. 📊 Relatórios visuais com estatísticas em tempo real
+```
+
+**Estrutura de Dados Detectada:**
+```
+📁 INOVIA_IMAGENS/
+├── syn_fXXXXXX-X-Pre/    # 👩 Female Pre-procedimento  
+├── syn_fXXXXXX-X-Pos/    # 👩 Female Pós-procedimento
+├── syn_mXXXXXX-X-Pre/    # 👨 Male Pre-procedimento
+└── syn_mXXXXXX-X-Pos/    # 👨 Male Pós-procedimento
+
+📄 medidas_dados_sinteticos.csv # Medidas corporais correspondentes
+```
+
+### ⚡ Quick Start
+
+```powershell
+# Ativar ambiente e executar verificação completa
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt  
+python main.py
+```
+
+**🎯 Resultado:** Relatório detalhado mostrando quantos dados temos, quais categorias, e se tudo está consistente.
+
+### 🏗️ Arquitetura do Projeto
 
 ```
 githubinovia/                    # 📁 Código principal
@@ -23,8 +58,10 @@ githubinovia/                    # 📁 Código principal
 └── README.md                  # 📖 Documentação
 
 Dados (pasta pai):               # 💾 Datasets
-├── INOVIA_IMAGENS_female/      # 👩 Imagens sintéticas femininas
-├── INOVIA_IMAGENS_male/        # 👨 Imagens sintéticas masculinas
+├── INOVIA_IMAGENS/             # �️ Todas as imagens sintéticas
+│   ├── [subpastas female]      # 👩 Categorias femininas
+│   ├── [subpastas male]        # 👨 Categorias masculinas
+│   └── [outras categorias]     # 📂 Outros tipos
 └── medidas_dados_sinteticos.csv # 📈 Medidas corporais
 ```
 
@@ -57,9 +94,10 @@ python main.py
 
 ## 📊 Dados Suportados
 
-- **Imagens Femininas**: Subpastas organizadas por categorias
-- **Imagens Masculinas**: Subpastas organizadas por categorias  
-- **CSV de Medidas**: Dados sintéticos estruturados
+- **Pasta INOVIA_IMAGENS**: Todas as imagens organizadas por subpastas
+  - Detecção automática de categorias femininas/masculinas
+  - Suporte a estruturas flexíveis de organização
+- **CSV de Medidas**: Dados sintéticos estruturados com medidas corporais
 
 ## 🛣️ Próximos Passos
 
