@@ -31,7 +31,7 @@ def exibir_menu_modelos() -> None:
     print("   • Método matemático otimizado")
     print("   • Processamento rápido e eficiente")
     print("   • Visualização automática de silhuetas")
-    print("   • Métricas detalhadas (MAE, R²)")
+    print("   • Métricas detalhadas (MSE, RMS)")
     print()
     print("="*60)
 
@@ -217,9 +217,9 @@ def exibir_resultados(resultado_geral: dict, tipo_modelo: str) -> None:
         print(f"✅ Taxa de sucesso: {stats['taxa_sucesso_imagens']:.1f}%")
         
         # Exibir métricas específicas do modelo de parametrização
-        if tipo_modelo == 'parametrizacao' and 'mae_global' in stats:
-            print(f"📈 MAE Global: {stats['mae_global']:.3f}")
-            print(f"📈 R² Global: {stats['r2_global']:.3f}")
+        if tipo_modelo == 'parametrizacao' and 'mse_global' in stats:
+            print(f"📈 MSE Global: {stats['mse_global']:.3f}")
+            print(f"📈 RMS Global: {stats['rms_global']:.3f}")
             print(f"⏱️ Tempo total: {stats.get('tempo_total', 0):.1f}s")
     else:
         print("⚠️ Estatísticas não disponíveis")

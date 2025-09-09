@@ -10,6 +10,7 @@ Com otimizações revolucionárias de vectorização NumPy e early stopping MSE.
 
 import sys
 from pathlib import Path
+import pandas as pd
 
 # Importar módulos do projeto
 from importa_dados import ImportadorDados
@@ -79,7 +80,7 @@ def estruturar_dados(data_frame_valido: ImportadorDados) -> ImportadorDados:
     return data_frame_valido
 
 
-def selecionar_dataset(data_frame_valido: ImportadorDados):
+def selecionar_dataset(data_frame_valido: ImportadorDados, indice: int) -> 'pd.DataFrame':
     """
     Seleciona o dataset para processamento
     
@@ -91,8 +92,8 @@ def selecionar_dataset(data_frame_valido: ImportadorDados):
     """
     print("\n📊 Selecionando dataset para processamento...")
     
-    # Para este exemplo, processar apenas o primeiro dataset válido
-    dataset = data_frame_valido.lista_possibilidades[0]
+    # Para este exemplo, processar apenas um dataset válido
+    dataset = data_frame_valido.lista_possibilidades[indice]
     
     print(f"✅ Dataset selecionado: {len(dataset)} registros disponíveis")
     return dataset
@@ -112,7 +113,7 @@ def main():
     data_frame_valido = estruturar_dados(data_frame_valido)
     
     # Selecionar dataset
-    dataset = selecionar_dataset(data_frame_valido)
+    dataset = selecionar_dataset(data_frame_valido, 0)
     
     # Inicializar modelo baseado na escolha do usuário
     modelo_seg, tipo_modelo = inicializar_modelo(dataset)

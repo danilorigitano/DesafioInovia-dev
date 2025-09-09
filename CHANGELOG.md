@@ -126,7 +126,7 @@ ModeloSegmentacaoParametrizacao:
 
 **Métricas de Qualidade:**
 - **DeepLabV3**: Confidence threshold, área segmentada, IoU
-- **Parametrização**: MSE < 150 (Excelente), MAE, R² global
+- **Parametrização**: MSE < 150 (Excelente), RMS global
 
 #### 📦 Dependências Atualizadas
 ```text

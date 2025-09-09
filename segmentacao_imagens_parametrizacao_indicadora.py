@@ -319,7 +319,7 @@ class SegmentacaoParametrizacaoIndicadora:
         melhores_params = {
             'pixel_inicio': 100,
             'pixel_fim': 380,
-            'valor_maximo': 100,
+            'valor_maximo': 180,
             'mse': float('inf')
         }
         
@@ -356,7 +356,8 @@ class SegmentacaoParametrizacaoIndicadora:
         # IMPLEMENTADO: Usar intensidade_max diretamente (sem varredura)
         # Definir valor_maximo como intensidade_max da linha
         valor_maximo_fixo = int(intensidade_max)
-        valor_maximo_fixo = max(40, min(255, valor_maximo_fixo))  # Garantir range válido
+
+        valor_maximo_fixo = valor_maximo_fixo * 0.6  # Ajuste para evitar saturação
         
         # Não fazer varredura sobre valor_maximo - usar valor fixo baseado na intensidade da linha
         
