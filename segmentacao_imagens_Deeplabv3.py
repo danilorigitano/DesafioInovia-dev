@@ -16,7 +16,8 @@ import matplotlib.pyplot as plt
 class SegmentacaoDeepLabV3:
     def __init__(self, device=None, confidence_threshold=0.5, min_area=100, 
                  morph_kernel_size=5, target_size=None, enhance_contrast=True,
-                 contrast_factor=1.5, brightness_factor=1.0, gamma_correction=1.0):
+                 contrast_factor=1.5, brightness_factor=1.0, gamma_correction=1.0,
+                 use_grayscale=True, grayscale_mode='adaptive'):
         """
         Inicializa o modelo DeepLabV3 com backbone ResNet50.
         
@@ -30,6 +31,11 @@ class SegmentacaoDeepLabV3:
             contrast_factor: Fator de contraste (1.0 = normal, >1.0 = mais contraste)
             brightness_factor: Fator de brilho (1.0 = normal)
             gamma_correction: Correção gamma (1.0 = normal, <1.0 = mais claro, >1.0 = mais escuro)
+            use_grayscale: Se deve usar conversão para grayscale (True/False)
+            grayscale_mode: Modo de conversão ('auto', 'always', 'adaptive')
+                - 'auto': Decide automaticamente baseado no contraste da imagem
+                - 'always': Sempre converte para grayscale
+                - 'adaptive': Usa grayscale apenas em imagens com baixo contraste de cor
         """
         if device is None:
             self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -46,10 +52,15 @@ class SegmentacaoDeepLabV3:
         self.brightness_factor = brightness_factor
         self.gamma_correction = gamma_correction
         
+        # Parâmetros de grayscale
+        self.use_grayscale = use_grayscale
+        self.grayscale_mode = grayscale_mode
+        
         print(f"Usando device: {self.device}")
         print(f"Confidence threshold: {self.confidence_threshold}")
         print(f"Área mínima: {self.min_area} pixels")
         print(f"Kernel morfológico: {self.morph_kernel_size}x{self.morph_kernel_size}")
+        print(f"Modo grayscale: {'Ativado' if self.use_grayscale else 'Desativado'} ({self.grayscale_mode})")
         if self.enhance_contrast:
             print(f"Melhoria de contraste ativada:")
             print(f"  - Fator de contraste: {self.contrast_factor}")
@@ -61,15 +72,88 @@ class SegmentacaoDeepLabV3:
         self.model.to(self.device)
         self.model.eval()
         
-        # Transformações de pré-processamento
+        # Transformações de pré-processamento (adaptadas para grayscale se necessário)
+        self._setup_transforms()
+        
+        # Classe 15 no COCO dataset corresponde à "person"
+        self.PERSON_CLASS = 15
+    
+    def _setup_transforms(self):
+        """
+        Configura as transformações baseado no modo de cores
+        """
+        if self.use_grayscale and self.grayscale_mode == 'always':
+            # Transformações para imagens grayscale (1 canal)
+            self.transform_gray = transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Lambda(lambda x: x.repeat(3, 1, 1) if x.size(0) == 1 else x),  # Replica para 3 canais
+                transforms.Normalize(mean=[0.485, 0.456, 0.406], 
+                                   std=[0.229, 0.224, 0.225])
+            ])
+        
+        # Transformações padrão para RGB
         self.transform = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.456, 0.406], 
                                std=[0.229, 0.224, 0.225])
         ])
+    
+    def _calcular_contraste_cor(self, imagem):
+        """
+        Calcula o contraste de cor da imagem para decidir se usar grayscale
         
-        # Classe 15 no COCO dataset corresponde à "person"
-        self.PERSON_CLASS = 15
+        Args:
+            imagem: PIL Image
+            
+        Returns:
+            float: Valor de contraste de cor (0-1, onde 0 = muito baixo contraste de cor)
+        """
+        img_array = np.array(imagem)
+        
+        # Calcular desvio padrão de cada canal
+        std_r = np.std(img_array[:,:,0])
+        std_g = np.std(img_array[:,:,1])
+        std_b = np.std(img_array[:,:,2])
+        
+        # Calcular diferença entre canais
+        diff_rg = np.mean(np.abs(img_array[:,:,0].astype(float) - img_array[:,:,1].astype(float)))
+        diff_rb = np.mean(np.abs(img_array[:,:,0].astype(float) - img_array[:,:,2].astype(float)))
+        diff_gb = np.mean(np.abs(img_array[:,:,1].astype(float) - img_array[:,:,2].astype(float)))
+        
+        # Métrica de contraste de cor combinada
+        color_variance = (std_r + std_g + std_b) / 3.0
+        color_difference = (diff_rg + diff_rb + diff_gb) / 3.0
+        
+        # Normalizar para 0-1
+        contrast_score = min(1.0, (color_variance + color_difference) / 100.0)
+        
+        return contrast_score
+    
+    def _decidir_usar_grayscale(self, imagem):
+        """
+        Decide se deve usar grayscale baseado no modo configurado
+        
+        Args:
+            imagem: PIL Image
+            
+        Returns:
+            bool: True se deve usar grayscale
+        """
+        if not self.use_grayscale:
+            return False
+        
+        if self.grayscale_mode == 'always':
+            return True
+        elif self.grayscale_mode == 'adaptive':
+            contraste_cor = self._calcular_contraste_cor(imagem)
+            # Usa grayscale se contraste de cor for baixo (< 0.3)
+            return contraste_cor < 0.3
+        elif self.grayscale_mode == 'auto':
+            contraste_cor = self._calcular_contraste_cor(imagem)
+            # Lógica mais sofisticada para decidir
+            return contraste_cor < 0.4 and np.mean(np.array(imagem)) < 150
+        
+        return False
     
     def melhorar_contraste(self, imagem):
         """
@@ -129,27 +213,42 @@ class SegmentacaoDeepLabV3:
             tensor: Tensor pré-processado
             original_size: Tamanho original da imagem
             process_size: Tamanho usado para processamento
+            is_grayscale: Se foi convertida para grayscale
         """
         if isinstance(imagem, np.ndarray):
             imagem = Image.fromarray(imagem)
         
         original_size = imagem.size
         
+        # Decidir se usar grayscale
+        usar_grayscale = self._decidir_usar_grayscale(imagem)
+        
+        # Converter para grayscale se necessário
+        if usar_grayscale:
+            print("  -> Convertendo para grayscale...")
+            imagem_processada = imagem.convert('L').convert('RGB')  # L->RGB para manter 3 canais
+        else:
+            imagem_processada = imagem.copy()
+        
         # Aplica melhoria de contraste antes do redimensionamento
-        imagem = self.melhorar_contraste(imagem)
+        imagem_processada = self.melhorar_contraste(imagem_processada)
         
         process_size = original_size
         
         # Redimensiona se target_size foi especificado
         if self.target_size is not None:
-            imagem = imagem.resize(self.target_size, Image.BILINEAR)
+            imagem_processada = imagem_processada.resize(self.target_size, Image.BILINEAR)
             process_size = self.target_size
         
-        # Aplica as transformações
-        input_tensor = self.transform(imagem)
+        # Aplica as transformações apropriadas
+        if usar_grayscale and hasattr(self, 'transform_gray'):
+            input_tensor = self.transform_gray(imagem_processada)
+        else:
+            input_tensor = self.transform(imagem_processada)
+        
         input_batch = input_tensor.unsqueeze(0).to(self.device)
         
-        return input_batch, original_size, process_size
+        return input_batch, original_size, process_size, usar_grayscale
     
     def pos_processar_mascara(self, mascara_pessoa):
         """
@@ -192,16 +291,17 @@ class SegmentacaoDeepLabV3:
             imagem_path: Caminho para a imagem
             
         Returns:
-            tuple: (imagem_original, mascara_pessoa)
+            tuple: (imagem_original, mascara_pessoa, info_processamento)
                 - imagem_original: Imagem original como numpy array
                 - mascara_pessoa: Máscara binária da pessoa (0 ou 255)
+                - info_processamento: Dict com informações do processamento
         """
         # Carrega a imagem
         imagem = Image.open(imagem_path).convert('RGB')
         imagem_original = np.array(imagem)
         
         # Pré-processa a imagem
-        input_batch, original_size, process_size = self.preprocessar_imagem(imagem)
+        input_batch, original_size, process_size, foi_grayscale = self.preprocessar_imagem(imagem)
         
         # Realiza a inferência
         with torch.no_grad():
@@ -223,7 +323,21 @@ class SegmentacaoDeepLabV3:
         # Converte para valores 0-255
         mascara_pessoa = mascara_pessoa * 255
         
-        return imagem_original, mascara_pessoa
+        # Informações do processamento
+        info_processamento = {
+            'foi_grayscale': foi_grayscale,
+            'original_size': original_size,
+            'process_size': process_size,
+            'confidence_threshold': self.confidence_threshold,
+            'grayscale_mode': self.grayscale_mode if self.use_grayscale else 'disabled'
+        }
+        
+        if foi_grayscale:
+            print(f"  ✓ Imagem processada em grayscale (modo: {self.grayscale_mode})")
+        else:
+            print(f"  ✓ Imagem processada em RGB")
+        
+        return imagem_original, mascara_pessoa, info_processamento
     
     def aplicar_mascara(self, imagem_original, mascara_pessoa, alpha=0.7):
         """
@@ -323,6 +437,24 @@ class SegmentacaoDeepLabV3:
             
         Returns:
             tuple ou None: (imagem_original, mascara_binaria) se sucesso, None se erro
+        """
+        try:
+            imagem_original, mascara_binaria, info_processamento = self.segmentar_pessoa(imagem_path)
+            # Retorna apenas imagem e máscara para compatibilidade com código existente
+            return imagem_original, mascara_binaria
+        except Exception as e:
+            print(f"Erro ao processar imagem {imagem_path}: {str(e)}")
+            return None
+    
+    def processar_imagem_completo(self, imagem_path):
+        """
+        Método completo que retorna todas as informações do processamento.
+        
+        Args:
+            imagem_path (str): Caminho para a imagem a ser processada
+            
+        Returns:
+            tuple ou None: (imagem_original, mascara_binaria, info_processamento) se sucesso, None se erro
         """
         try:
             return self.segmentar_pessoa(imagem_path)

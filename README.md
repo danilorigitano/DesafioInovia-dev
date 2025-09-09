@@ -2,135 +2,279 @@
 
 Sistema modular para processamento e análise de dados de imagens sintéticas com medidas corporais.
 
-🚀 **Versão 0.2.1** - Refatoração e otimização de código!  
-📋 [Ver CHANGELOG.md](CHANGELOG.md) para histórico detalhado com fluxo Mermaid
+🚀 **Versão 0.2.2** - Sistema de múltiplos modelos de segmentação!  
+📋 [Ver CHANGELOG.md](CHANGELOG.md) para histórico detalhado
 
-## 📋 Evolução do Desenvolvimento
+## 🎯 Evolução do Desenvolvimento
 
-### 🔧 v0.2.1 - Refatoração e Otimização (ATUAL)
-O projeto passou por **refatoração de nomenclatura e limpeza de código**!
-
-**🛠️ Melhorias Implementadas:**
-- **🔄 Renomeação de classe**: `SegmentacaoPessoa` → `SegmentacaoDeepLabV3`
-- **🗂️ Limpeza de arquivos**: Removido arquivo duplicado `segmentacao_imagens.py`
-- **📦 Organização melhorada**: Mantido apenas `segmentacao_imagens_Deeplabv3.py`
-- **🔗 Atualizações de imports**: Todos os módulos sincronizados
-
-### 🎯 v0.2.0 - Sistema de Segmentação de Imagens
-O projeto evoluiu para **processamento avançado de imagens** usando Deep Learning!
-
-**🚀 Novidades Implementadas:**
-- **🤖 Modelo DeepLabV3** com backbone ResNet50 para segmentação semântica
-- **🎯 Detecção automática** de pessoas em imagens front.png e left.png
-- **🔧 Pipeline otimizada** com pré/pós-processamento de contraste
-- **📊 Estatísticas detalhadas** de segmentação (área, percentuais, qualidade)
-- **👁️ Visualização interativa** das silhuetas processadas
-
-### 🏗️ v0.1.0 - Base de Dados (Concluída)
-O projeto começou focando na **validação e estruturação robusta dos dados** como base sólida.
-
-**Por que essa estratégia funcionou:**
-- ✅ Detectamos problemas de dados **antes** de desenvolver features complexas
-- 🔄 Garantimos **integridade** entre CSV e pastas de imagens  
-- 📊 Tivemos **visibilidade** do que temos disponível para trabalhar
-- 🧩 Criamos **base modular** para crescimento organizado
-
-### 🏗️ O que foi Implementado
-
-**🎯 v0.2.1 - Motor de Segmentação Otimizado: Classe `SegmentacaoDeepLabV3`**
-```python
-# Arquitetura refatorada e otimizada:
-1. 🔄 SegmentacaoDeepLabV3 (nome mais descritivo da tecnologia)
-2. 🗂️ Arquivo único: segmentacao_imagens_Deeplabv3.py
-3. 📦 Imports organizados e atualizados
-4. 🔧 Código mais limpo e manutenível
-
-# Funcionalidades mantidas (sem alteração):
-1. 🤖 Modelo DeepLabV3 com ResNet50 para detecção de pessoas
-2. 🖼️ Processamento automático de front.png + left.png por ID
-3. ✨ Pré-processamento: melhoria de contraste, CLAHE, sharpening
-4. 🔧 Pós-processamento: filtros morfológicos, remoção de ruído
-5. 📊 Estatísticas: área da pessoa, percentuais, qualidade da detecção
-6. 👁️ Visualização: silhuetas, máscaras, comparações lado-a-lado
-7. 💾 Exportação: resultados em JSON, imagens processadas
+```mermaid
+graph TD
+    A["v0.1.0<br/>📊 Base de Dados"] --> B["v0.2.0<br/>🖼️ Segmentação DeepLabV3"]
+    B --> C["v0.2.1<br/>🔧 Refatoração"]
+    C --> D["v0.2.2<br/>🎛️ Múltiplos Modelos"]
+    D --> E["v0.3.0<br/>🧮 Analytics"]
+    
+    A --> A1["✅ Validação CSV/Imagens"]
+    A --> A2["✅ Estruturação por Gênero"]
+    A --> A3["✅ Relatórios Automáticos"]
+    
+    B --> B1["✅ Modelo DeepLabV3"]
+    B --> B2["✅ Processamento GPU/CPU"]
+    B --> B3["✅ Visualização Interativa"]
+    
+    C --> C1["✅ Nomenclatura Clara"]
+    C --> C2["✅ Código Limpo"]
+    C --> C3["✅ Arquitetura Modular"]
+    
+    D --> D1["✅ DeepLabV3 + ResNet101"]
+    D --> D2["✅ Parametrização Indicadora"]
+    D --> D3["✅ Interface de Escolha"]
+    
+    E --> E1["🔄 Correlações Automáticas"]
+    E --> E2["🔄 Dashboard Interativo"]
+    E --> E3["🔄 Métricas Avançadas"]
+    
+    classDef implemented fill:#4CAF50,stroke:#2E7D32,color:#fff
+    classDef current fill:#2196F3,stroke:#1976D2,color:#fff
+    classDef future fill:#FF9800,stroke:#F57C00,color:#fff
+    
+    class A,B,C,D,A1,A2,A3,B1,B2,B3,C1,C2,C3,D1,D2,D3 implemented
+    class E current
+    class E1,E2,E3 future
 ```
 
-**🎯 v0.2.0 - Motor de Segmentação: Classe `ModeloSegmentacao`**
-```python
-# Funcionalidades de processamento de imagens (v0.2.0):
-1. 🤖 Modelo DeepLabV3 com ResNet50 para detecção de pessoas
-2. 🖼️ Processamento automático de front.png + left.png por ID
-3. ✨ Pré-processamento: melhoria de contraste, CLAHE, sharpening
-4. 🔧 Pós-processamento: filtros morfológicos, remoção de ruído
-5. 📊 Estatísticas: área da pessoa, percentuais, qualidade da detecção
-6. 👁️ Visualização: silhuetas, máscaras, comparações lado-a-lado
-7. 💾 Exportação: resultados em JSON, imagens processadas
+### 🎛️ v0.2.2 - Sistema de Múltiplos Modelos (ATUAL)
+O projeto agora oferece **dois métodos de segmentação** com interface de escolha!
+
+**🚀 Novos Recursos:**
+- **🎯 Interface de escolha**: Menu interativo para seleção de método
+- **🧠 DeepLabV3**: Máxima precisão com deep learning
+- **📐 Parametrização**: Máxima velocidade com funções indicadoras
+- **📊 Comparação automática**: Métricas de performance para cada método
+
+**🏗️ Arquitetura de Modelos:**
+
+```mermaid
+graph LR
+    A["main.py"] --> B["escolher_modelo.py"]
+    B --> C["🧠 DeepLabV3"]
+    B --> D["📐 Parametrização"]
+    
+    C --> C1["ModeloSegmentacaoDeepLabV3"]
+    C --> C2["segmentacao_imagens_Deeplabv3.py"]
+    C --> C3["🎯 Alta Precisão"]
+    
+    D --> D1["ModeloSegmentacaoParametrizacao"]
+    D --> D2["segmentacao_imagens_parametrizacao_indicadora.py"]
+    D --> D3["⚡ Alta Velocidade"]
+    
+    C3 --> E["📊 Resultados"]
+    D3 --> E
+    
+    classDef main fill:#2196F3,stroke:#1976D2,color:#fff
+    classDef models fill:#4CAF50,stroke:#2E7D32,color:#fff
+    classDef engines fill:#FF9800,stroke:#F57C00,color:#fff
+    
+    class A,B main
+    class C,D,C1,D1 models
+    class C2,D2,C3,D3,E engines
 ```
 
-**⚙️ v0.1.0 - Motor Central: Classe `ImportadorDados`** *(Base sólida)*
-```python
-# Funcionalidades principais desenvolvidas:
-1. 🔍 Verificação automática de paths e arquivos
-2. 📄 Carregamento seguro de CSV com tratamento de erros  
-3. 🎯 Filtragem inteligente (só dados com pasta correspondente)
-4. ⚖️ Categorização por gênero/posição: syn_[f/m]XXXXX-X-[Pre/Pos]
-5. 📊 Relatórios visuais com estatísticas em tempo real
-```
+**⚖️ Comparação de Métodos:**
 
-**Estrutura de Dados Detectada:**
-```
-📁 INOVIA_IMAGENS/
-├── syn_fXXXXXX-X-Pre/    # 👩 Female Pre-procedimento  
-├── syn_fXXXXXX-X-Pos/    # 👩 Female Pós-procedimento
-├── syn_mXXXXXX-X-Pre/    # 👨 Male Pre-procedimento
-└── syn_mXXXXXX-X-Pos/    # 👨 Male Pós-procedimento
+| Aspecto | 🧠 DeepLabV3 | 📐 Parametrização |
+|---------|-------------|------------------|
+| **Precisão** | ⭐⭐⭐⭐⭐ Máxima | ⭐⭐⭐⭐ Alta |
+| **Velocidade** | ⭐⭐ ~15s/imagem | ⭐⭐⭐⭐⭐ ~3s/imagem |
+| **Recursos** | GPU recomendada | CPU suficiente |
+| **Método** | Deep Learning | Funções Matemáticas |
+| **Uso Ideal** | Precisão crítica | Processamento em massa |
 
-📄 medidas_dados_sinteticos.csv # Medidas corporais correspondentes
-```
+### 🔧 v0.2.1 - Refatoração e Otimização
+**🛠️ Melhorias Arquiteturais:**
+- **🔄 Renomeação**: `SegmentacaoPessoa` → `SegmentacaoDeepLabV3`
+- **🗂️ Organização**: Eliminação de arquivos duplicados
+- **📦 Modularidade**: Estrutura mais clara e manutenível
 
-### ⚡ Quick Start
+### 🖼️ v0.2.0 - Sistema de Segmentação de Imagens
+**🚀 Implementação do DeepLabV3:**
+- **🤖 Modelo pré-treinado** com backbone ResNet50
+- **🎯 Detecção automática** de pessoas em imagens
+- **🔧 Pipeline otimizada** com pré/pós-processamento
+- **👁️ Visualização interativa** de resultados
+
+### 📊 v0.1.0 - Base de Dados Sólida
+**🏗️ Fundação do projeto:**
+- **✅ Validação automática** de correspondência CSV ↔ Imagens
+- **⚖️ Categorização inteligente** por gênero e posição
+- **📋 Relatórios detalhados** com estatísticas em tempo real
+
+## ⚡ Quick Start
 
 ```powershell
-# Ativar ambiente e executar processamento completo
+# 1. Ativar ambiente e instalar dependências
 .\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt  
+pip install -r requirements.txt
+
+# 2. Executar sistema com interface de escolha
 python main.py
 ```
 
-**🎯 Resultado v0.2.0:** 
-- ✅ Relatório detalhado de dados disponíveis
-- 🖼️ Processamento de segmentação com Deep Learning  
-- 🎭 Silhuetas extraídas das imagens front.png e left.png
-- 📊 Estatísticas de qualidade da segmentação
-- 👁️ Visualização interativa dos resultados
-
-### 🏗️ Arquitetura do Projeto
-
+**🎯 Interface de Escolha:**
 ```
-githubinovia/                    # 📁 Código principal
-├── main.py                     # 🎯 Coordenador principal
-├── importa_dados.py            # 📊 Gerenciamento de dados
-├── modelo_segmentacao.py       # 🤖 Coordenador de segmentação  
-├── segmentacao_imagens_Deeplabv3.py      # 🖼️ Processamento DeepLabV3
-├── requirements.txt            # 📦 Dependências (incluindo PyTorch)
-├── CHANGELOG.md               # 📝 Histórico com mermaid
-└── README.md                  # 📖 Documentação
+🎯 SELEÇÃO DE MODELO DE SEGMENTAÇÃO
+================================================================
+1️⃣  DeepLabV3 + ResNet101
+   • Modelo pré-treinado de deep learning
+   • Alta precisão na segmentação de pessoas
+   • Processamento mais lento
 
-Dados (pasta pai):               # 💾 Datasets
-├── INOVIA_IMAGENS/             # 🖼️ Todas as imagens sintéticas
-│   ├── [subpastas female]      # 👩 Categorias femininas
-│   │   ├── front.png          # 🖼️ Imagem frontal
-│   │   └── left.png           # 🖼️ Imagem lateral
-│   ├── [subpastas male]        # 👨 Categorias masculinas
-│   │   ├── front.png          # 🖼️ Imagem frontal  
-│   │   └── left.png           # 🖼️ Imagem lateral
-│   └── [outras categorias]     # 📂 Outros tipos
-└── medidas_dados_sinteticos.csv # 📈 Medidas corporais
+2️⃣  Parametrização com Funções Indicadoras
+   • Método matemático otimizado
+   • Processamento rápido e eficiente
+   • Visualização automática de silhuetas
+   • Métricas detalhadas (MAE, R²)
+
+Escolha uma opção (1-2) ou Enter para padrão (2):
 ```
 
-## ⚙️ Configuração e Dependências
+## 🏗️ Arquitetura Completa
 
-### 📦 Requirements Atualizados *(v0.2.0)*
+```mermaid
+graph TB
+    subgraph "📁 Entrada de Dados"
+        A1["📄 medidas_dados_sinteticos.csv"]
+        A2["📂 INOVIA_IMAGENS/"]
+        A2 --> A21["syn_fXXXXXX-X-Pre/front.png"]
+        A2 --> A22["syn_fXXXXXX-X-Pre/left.png"]
+        A2 --> A23["syn_fXXXXXX-X-Pos/front.png"]
+        A2 --> A24["syn_fXXXXXX-X-Pos/left.png"]
+    end
+    
+    subgraph "🔧 Processamento"
+        B1["main.py<br/>🎯 Coordenador"]
+        B2["importa_dados.py<br/>📊 Validação"]
+        B3["escolher_modelo.py<br/>🎛️ Seleção"]
+        
+        B1 --> B2
+        B2 --> B3
+    end
+    
+    subgraph "🧠 Modelo DeepLabV3"
+        C1["ModeloSegmentacaoDeepLabV3"]
+        C2["SegmentacaoDeepLabV3"]
+        C3["🎯 PyTorch + ResNet50"]
+        
+        C1 --> C2
+        C2 --> C3
+    end
+    
+    subgraph "📐 Modelo Parametrização"
+        D1["ModeloSegmentacaoParametrizacao"]
+        D2["SegmentacaoParametrizacaoIndicadora"]
+        D3["📊 382 Funções Indicadoras"]
+        
+        D1 --> D2
+        D2 --> D3
+    end
+    
+    subgraph "📤 Saída"
+        E1["📊 Relatórios JSON"]
+        E2["🖼️ Máscaras Processadas"]
+        E3["📈 Métricas de Qualidade"]
+        E4["👁️ Visualizações"]
+    end
+    
+    A1 --> B2
+    A2 --> B2
+    B3 --> C1
+    B3 --> D1
+    C1 --> E1
+    D1 --> E1
+    C2 --> E2
+    D2 --> E2
+    C3 --> E3
+    D3 --> E3
+    C1 --> E4
+    D1 --> E4
+    
+    classDef input fill:#e3f2fd,stroke:#1976d2
+    classDef processing fill:#f3e5f5,stroke:#7b1fa2
+    classDef models fill:#e8f5e8,stroke:#388e3c
+    classDef output fill:#fff3e0,stroke:#f57c00
+    
+    class A1,A2,A21,A22,A23,A24 input
+    class B1,B2,B3 processing
+    class C1,C2,C3,D1,D2,D3 models
+    class E1,E2,E3,E4 output
+```
+
+## 🎯 Funcionalidades Atuais
+
+### 📊 Módulo de Dados
+| Componente | Status | Descrição |
+|------------|--------|-----------|
+| `ImportadorDados` | ✅ | Verificação e carregamento automático |
+| `verificar_dados()` | ✅ | Validação de arquivos e caminhos |
+| `carregar_dados_csv()` | ✅ | Leitura segura com tratamento de erros |
+| `filtrar_por_genero_posicao()` | ✅ | Categorização inteligente |
+| `imprimir_relatorio()` | ✅ | Estatísticas visuais em tempo real |
+
+### 🎛️ Sistema de Escolha de Modelos
+| Componente | Status | Descrição |
+|------------|--------|-----------|
+| `escolher_modelo.py` | ✅ | Interface de seleção interativa |
+| `inicializar_modelo()` | ✅ | Configuração automática do modelo |
+| `processar_com_modelo()` | ✅ | Execução com modelo escolhido |
+| `exibir_resultados()` | ✅ | Relatórios personalizados por método |
+
+### 🧠 Módulo DeepLabV3
+| Componente | Status | Descrição |
+|------------|--------|-----------|
+| `ModeloSegmentacaoDeepLabV3` | ✅ | Coordenador DeepLabV3 |
+| `SegmentacaoDeepLabV3` | ✅ | Engine de processamento |
+| `processar_dataset()` | ✅ | Pipeline completa automatizada |
+| `segmentar_pessoa()` | ✅ | Segmentação semântica de alta precisão |
+| `melhorar_contraste()` | ✅ | Pré-processamento CLAHE + sharpening |
+| `pos_processar_mascara()` | ✅ | Filtros morfológicos avançados |
+
+### 📐 Módulo Parametrização
+| Componente | Status | Descrição |
+|------------|--------|-----------|
+| `ModeloSegmentacaoParametrizacao` | ✅ | Coordenador Parametrização |
+| `SegmentacaoParametrizacaoIndicadora` | ✅ | Engine matemático otimizado |
+| `_aplicar_parametrizacao_linhas()` | ✅ | 382 funções indicadoras |
+| `_otimizar_parametros_linha()` | ✅ | Otimização MSE rigorosa |
+| `visualizar_amostra_resultados()` | ✅ | Visualização automática |
+
+## 📊 Dados Suportados
+
+### 🖼️ Estrutura de Imagens
+```
+📁 INOVIA_IMAGENS/
+├── syn_fXXXXXX-X-Pre/    # 👩👨 Pre-procedimento  
+│   ├── front.png         # 🖼️ Imagem frontal
+│   └── left.png          # 🖼️ Imagem lateral
+└── syn_fXXXXXX-X-Pos/    # 👩👨 Pós-procedimento
+    ├── front.png         # 🖼️ Imagem frontal
+    └── left.png          # 🖼️ Imagem lateral
+```
+
+**Processamento Automatizado:**
+- **Detecção**: Identifica automaticamente categorias masculinas/femininas
+- **Validação**: Verifica correspondência entre CSV e pastas
+- **Segmentação**: Processa front.png + left.png para cada ID
+- **Métricas**: Calcula estatísticas de qualidade por imagem e globais
+
+### 📈 Dados CSV
+- **Arquivo**: `medidas_dados_sinteticos.csv`
+- **Integração**: Correspondência automática ID ↔ Pasta
+- **Validação**: Verificação de consistência em tempo real
+- **Categorização**: Separação por gênero e posição (Pre/Pos)
+
+## ⚙️ Configuração Avançada
+
+### 📦 Dependências Completas
 ```text
 # Base de dados e visualização
 pandas>=2.0.0
@@ -138,115 +282,120 @@ numpy>=1.24.0
 matplotlib>=3.7.0
 Pillow>=10.0.0
 
-# Deep Learning para segmentação  
+# Deep Learning (DeepLabV3)
 torch>=2.0.0
 torchvision>=0.15.0
-
-# Processamento de imagens
 opencv-python>=4.8.0
 
-# Pipeline otimizada
+# Processamento matemático (Parametrização)
 scipy>=1.11.0
 scikit-learn>=1.3.0
 pydensecrf>=1.0.2
+
+# Suporte adicional
+pathlib2>=2.3.0
+warnings
 ```
 
-### 1. Ativar ambiente virtual
-```powershell
-.\.venv\Scripts\Activate.ps1
+### 🎛️ Parâmetros Configuráveis
+
+**DeepLabV3:**
+```python
+ModeloSegmentacaoDeepLabV3(
+    confidence_threshold=0.5,     # Threshold de detecção
+    min_area=100,                 # Área mínima (pixels)
+    target_size=(512, 512),       # Redimensionamento
+    metodo_deeplabv3='auto'       # 'rgb', 'grayscale_adaptive', 'grayscale_always'
+)
 ```
 
-### 2. Instalar dependências
-```powershell
-pip install -r requirements.txt
+**Parametrização:**
+```python
+ModeloSegmentacaoParametrizacao(
+    target_width=512,             # Largura da imagem
+    target_height=382,            # Altura = nº funções indicadoras
+    morph_kernel_size=5,          # Tamanho kernel morfológico
+    min_area=100,                 # Filtro de ruído
+    enhance_contrast=True         # Melhoria de contraste
+)
 ```
-
-⚠️ **Nota**: O download do modelo DeepLabV3 (ResNet50) acontece automaticamente na primeira execução (~100MB)
-
-### 3. Executar processamento completo
-```powershell
-python main.py
-```
-
-## 🎯 Funcionalidades Atuais
-
-### 📊 Módulo de Dados
-| Módulo | Status | Descrição |
-|--------|--------|-----------|
-| `ImportadorDados` | ✅ | Verificação e carregamento automático de dados |
-| `verificar_dados()` | ✅ | Validação de existência de arquivos/pastas |
-| `carregar_dados_csv()` | ✅ | Leitura segura de dados CSV |
-| `obter_estatisticas()` | ✅ | Contagem e métricas dos datasets |
-| `imprimir_relatorio()` | ✅ | Relatório visual completo |
-
-### 🖼️ Módulo de Segmentação *(NOVO v0.2.0)*
-| Módulo | Status | Descrição |
-|--------|--------|-----------|
-| `ModeloSegmentacao` | ✅ | Coordenador principal de processamento |
-| `SegmentacaoDeepLabV3` | ✅ | Engine DeepLabV3 para segmentação |
-| `processar_dataset()` | ✅ | Pipeline completa para múltiplas imagens |
-| `segmentar_pessoa()` | ✅ | Detecção semântica de pessoas |
-| `melhorar_contraste()` | ✅ | Pré-processamento com CLAHE e sharpening |
-| `pos_processar_mascara()` | ✅ | Filtros morfológicos e limpeza |
-| `visualizar_resultados()` | ✅ | Exibição interativa de silhuetas |
-| `salvar_resultados()` | ✅ | Exportação em JSON e imagens |
-
-## 📊 Dados Suportados
-
-### 🖼️ Estrutura de Imagens *(Expandida v0.2.0)*
-- **Pasta INOVIA_IMAGENS**: Todas as imagens organizadas por subpastas
-  - Detecção automática de categorias femininas/masculinas
-  - **Processamento DeepLabV3**: front.png + left.png por ID
-  - **Segmentação semântica**: Extração de silhuetas humanas
-  - **Estatísticas de qualidade**: Área, percentuais, métricas de confiança
-  - Suporte a estruturas flexíveis de organização
-
-### 📈 Dados Estruturados  
-- **CSV de Medidas**: Dados sintéticos estruturados com medidas corporais
-  - Integração automática com pastas de imagens
-  - Validação de correspondência ID ↔ Pasta
-  - Categorização inteligente por gênero e posição
 
 ## 🛣️ Próximos Passos
 
-### 🎯 Roadmap Atualizado
 ```mermaid
-graph LR
-    A["✅ v0.1.0<br/>Base Dados"] --> B["✅ v0.2.0<br/>Segmentação"]
-    B --> C["✅ v0.2.1<br/>Refatoração"]
-    C --> D["🔄 v0.3.0<br/>Analytics"]
-    D --> E["🎯 v0.4.0<br/>Interface"]
-    E --> F["🚀 v0.5.0<br/>Deploy"]
+gantt
+    title Roadmap INOVIA 2025
+    dateFormat  YYYY-MM-DD
+    section Concluído
+    Base de Dados       :done, base, 2025-09-08, 1d
+    Segmentação DeepLabV3 :done, deep, 2025-09-08, 1d
+    Refatoração         :done, refact, 2025-09-09, 1d
+    Múltiplos Modelos   :done, multi, 2025-09-09, 1d
     
-    classDef done fill:#4CAF50,stroke:#2E7D32,color:#fff
-    classDef next fill:#FF9800,stroke:#F57C00,color:#fff
+    section Em Desenvolvimento
+    Analytics Avançados :active, analytics, 2025-09-10, 5d
     
-    class A,B,C done
-    class D,E,F next
+    section Planejado
+    Interface Gráfica   :ui, after analytics, 7d
+    Correlações Auto    :corr, after analytics, 5d
+    Dashboard Interativo :dash, after ui, 5d
+    Testes Automatizados :test, after dash, 3d
+    Deploy Produção     :deploy, after test, 5d
 ```
 
-1. **🧮 v0.3.0 - Análise de Correlações** - Relacionar medidas ↔ silhuetas
-2. **📈 Analytics Avançados** - Estatísticas e insights automatizados  
-3. **🎛️ v0.4.0 - Interface Gráfica** - Dashboard interativo com Streamlit
-4. **🧪 Testes Automatizados** - Validação contínua de qualidade
-5. **🚀 v0.5.0 - Deploy** - Containerização e produção
+### 🎯 v0.3.0 - Analytics Avançados (Próximo)
+- **🧮 Correlações automáticas**: Relacionar medidas corporais ↔ silhuetas
+- **📈 Insights estatísticos**: Padrões e tendências nos dados
+- **🔍 Análise comparativa**: Before/After e Male/Female
+- **📊 Métricas avançadas**: Precisão, recall, F1-score
+
+### 🎛️ v0.4.0 - Interface Gráfica
+- **🖥️ Dashboard Streamlit**: Interface web interativa
+- **📊 Visualizações dinâmicas**: Gráficos e plots em tempo real
+- **🎯 Configuração visual**: Ajustes de parâmetros via interface
+- **📤 Exportação facilitada**: Download de resultados em múltiplos formatos
+
+### 🚀 v0.5.0 - Deploy e Produção
+- **🐳 Containerização Docker**: Deploy simplificado
+- **☁️ Cloud deployment**: Suporte Azure/AWS
+- **🔧 CI/CD pipeline**: Automação de build e deploy
+- **📚 Documentação completa**: Guias de uso e API
 
 ## 📈 Status Atual
 
-🚀 **Versão 0.2.1** - Refatoração e otimização de código!  
-📋 [Ver CHANGELOG.md](CHANGELOG.md) para histórico detalhado com fluxo Mermaid
+🚀 **Versão 0.2.2** - Sistema de múltiplos modelos de segmentação!
+
+### 🏆 Marcos Alcançados
+- ✅ **Base de dados robusta** e validação automática
+- ✅ **Dois métodos de segmentação** com escolha interativa
+- ✅ **Pipeline completa** dados → processamento → resultados
+- ✅ **Qualidade enterprise** com logging e tratamento de erros
+- ✅ **Métricas comparativas** entre diferentes métodos
+- 🔄 **Próximo**: Analytics avançados e correlações automáticas
 
 ### 🎯 Tecnologias Utilizadas
 - **🐍 Python 3.11+** - Linguagem principal
-- **🤖 PyTorch + Torchvision** - Deep Learning e modelos pré-treinados
+- **🤖 PyTorch + Torchvision** - Deep Learning (DeepLabV3)
+- **📐 SciPy + NumPy** - Computação matemática (Parametrização)
 - **🖼️ OpenCV** - Processamento de imagens
-- **📊 Pandas + NumPy** - Manipulação de dados
-- **🎨 Matplotlib** - Visualização
-- **⚡ CUDA** - Aceleração GPU (opcional)
+- **📊 Pandas + Matplotlib** - Análise e visualização de dados
+- **⚡ CUDA** - Aceleração GPU (opcional para DeepLabV3)
 
-### 🏆 Marcos Alcançados
-- ✅ **Base de dados** robusta e validada
-- ✅ **Segmentação DeepLabV3** implementada
-- ✅ **Pipeline completa** dados → processamento → resultados
-- ✅ **Qualidade enterprise** com logging e tratamento de erros
-- 🔄 **Próximo**: Analytics e correlações avançadas
+### 🌟 Destaques da v0.2.2
+- **🎛️ Interface de escolha** entre métodos de segmentação
+- **⚖️ Comparação automática** de performance entre modelos
+- **📊 Métricas específicas** para cada método (MSE, IoU, etc.)
+- **🎭 Visualização automática** de silhuetas processadas
+- **💾 Resultados estruturados** em formato JSON padronizado
+
+---
+
+**🔗 Links Úteis:**
+- 📋 [CHANGELOG.md](CHANGELOG.md) - Histórico detalhado de versões
+- 🐛 [Issues](../../issues) - Reportar bugs ou sugerir melhorias
+- 🤝 [Contributing](../../pulls) - Contribuir com o projeto
+
+**📞 Suporte:**
+- 📧 Email: suporte@inovia.com
+- 💬 Chat: [Discord INOVIA](https://discord.gg/inovia)
+- 📱 WhatsApp: +55 (11) 99999-9999
