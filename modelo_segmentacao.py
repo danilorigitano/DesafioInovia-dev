@@ -13,7 +13,7 @@ import numpy as np
 from typing import List, Dict, Tuple, Optional
 import logging
 
-from segmentacao_imagens import SegmentacaoPessoa
+from segmentacao_imagens_Deeplabv3 import SegmentacaoDeepLabV3
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -53,7 +53,7 @@ class ModeloSegmentacao:
         
         # Inicializar modelo de segmentação
         logger.info("Inicializando modelo de segmentação...")
-        self.segmentador = SegmentacaoPessoa(
+        self.segmentador = SegmentacaoDeepLabV3(
             confidence_threshold=confidence_threshold,
             min_area=min_area,
             target_size=target_size
@@ -153,9 +153,6 @@ class ModeloSegmentacao:
             # Extrair dados do resultado
             imagem_original, mascara_binaria = resultado
             
-            # Calcular estatísticas da máscara
-            estatisticas = self._calcular_estatisticas_mascara(mascara_binaria)
-            
             return {
                 'variavel': variavel,
                 'tipo_imagem': tipo_imagem,
@@ -164,7 +161,7 @@ class ModeloSegmentacao:
                 'erro': None,
                 'mascara': mascara_binaria,
                 'imagem_original': imagem_original,
-                'estatisticas': estatisticas
+                'estatisticas': None
             }
             
         except Exception as e:
@@ -179,38 +176,6 @@ class ModeloSegmentacao:
                 'imagem_original': None,
                 'estatisticas': None
             }
-    
-    def _calcular_estatisticas_mascara(self, mascara: np.ndarray) -> Dict:
-        """
-        Calcula estatísticas da máscara de segmentação
-        
-        Args:
-            mascara (np.ndarray): Máscara binária
-            
-        Returns:
-            Dict: Estatísticas da máscara
-        """
-        if mascara is None:
-            return {}
-        
-        # Converter para binário se necessário
-        if mascara.dtype != bool:
-            mascara_bin = mascara > 0
-        else:
-            mascara_bin = mascara
-        
-        total_pixels = mascara.shape[0] * mascara.shape[1]
-        pixels_pessoa = np.sum(mascara_bin)
-        percentual_pessoa = (pixels_pessoa / total_pixels) * 100
-        
-        return {
-            'total_pixels': int(total_pixels),
-            'pixels_pessoa': int(pixels_pessoa),
-            'pixels_fundo': int(total_pixels - pixels_pessoa),
-            'percentual_pessoa': float(percentual_pessoa),
-            'percentual_fundo': float(100 - percentual_pessoa),
-            'dimensoes': mascara.shape
-        }
     
     def processar_variavel(self, variavel: str) -> Dict:
         """
@@ -409,35 +374,24 @@ class ModeloSegmentacao:
         Obtém estatísticas resumidas do processamento
         
         Returns:
-            Dict: Estatísticas resumidas
+            Dict: Estatísticas resumidas (simplificado - estatísticas de máscara removidas)
         """
         if not self.resultados:
             return {}
         
-        # Coletar estatísticas de máscaras
-        estatisticas_mascaras = []
+        # Coletar apenas estatísticas básicas de processamento
+        total_imagens_processadas = 0
+        total_imagens_sucesso = 0
         
         for resultado in self.resultados:
             if resultado['sucesso']:
                 for resultado_img in resultado['resultados_imagens']:
-                    if resultado_img['sucesso'] and resultado_img['estatisticas']:
-                        estatisticas_mascaras.append(resultado_img['estatisticas'])
-        
-        if not estatisticas_mascaras:
-            return {}
-        
-        # Calcular médias e estatísticas
-        percentuais_pessoa = [stat['percentual_pessoa'] for stat in estatisticas_mascaras]
-        pixels_pessoa = [stat['pixels_pessoa'] for stat in estatisticas_mascaras]
+                    total_imagens_processadas += 1
+                    if resultado_img['sucesso']:
+                        total_imagens_sucesso += 1
         
         return {
-            'total_mascaras_analisadas': len(estatisticas_mascaras),
-            'percentual_pessoa_medio': np.mean(percentuais_pessoa),
-            'percentual_pessoa_std': np.std(percentuais_pessoa),
-            'percentual_pessoa_min': np.min(percentuais_pessoa),
-            'percentual_pessoa_max': np.max(percentuais_pessoa),
-            'pixels_pessoa_medio': np.mean(pixels_pessoa),
-            'pixels_pessoa_std': np.std(pixels_pessoa),
-            'pixels_pessoa_min': np.min(pixels_pessoa),
-            'pixels_pessoa_max': np.max(pixels_pessoa)
+            'total_imagens_processadas': total_imagens_processadas,
+            'total_imagens_sucesso': total_imagens_sucesso,
+            'taxa_sucesso': (total_imagens_sucesso / total_imagens_processadas * 100) if total_imagens_processadas > 0 else 0
         }

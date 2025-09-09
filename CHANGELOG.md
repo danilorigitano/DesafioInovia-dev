@@ -1,5 +1,6 @@
-# Changelog
-
+# Changelog    E --> F["🖼️ Segmentação"]
+    F --> G["🔧 Refatoração"]
+    G --> H["🔮 Próximo"]
 Histórico de desenvolvimento do Projeto INOVIA.
 
 ## Fluxo de Desenvolvimento
@@ -33,20 +34,70 @@ graph LR
     F --> F3["🎭 Silhuetas"]
     F --> F4["📊 Métricas"]
     
-    G --> G1["🧮 Analytics"]
-    G --> G2["🎛️ Interface"]
-    G --> G3["🔗 Correlações"]
+    G --> G1["🔄 Renomear Classes"]
+    G --> G2["🗂️ Limpar Arquivos"]
+    G --> G3["📦 Organizar Imports"]
+    
+    H --> H1["🧮 Analytics"]
+    H --> H2["🎛️ Interface"]
+    H --> H3["🔗 Correlações"]
     
     classDef done fill:#4CAF50,stroke:#2E7D32,color:#fff
     classDef current fill:#2196F3,stroke:#1976D2,color:#fff
     classDef next fill:#FF9800,stroke:#F57C00,color:#fff
     
-    class A,B,C,D,E,B1,B2,B3,C1,C2,C3,D1,D2,D3,E1,E2 done
-    class F,F1,F2,F3,F4 current
-    class G,G1,G2,G3 next
+    class A,B,C,D,E,F,B1,B2,B3,C1,C2,C3,D1,D2,D3,E1,E2,F1,F2,F3,F4,G,G1,G2,G3 done
+    class H,H1,H2,H3 next
 ```
 
 ## Versões
+
+### [0.2.1] - 2025-09-09 - Refatoração e Otimização 🔧
+
+#### 🛠️ REFATORADO: Arquitetura de Classes
+- **🔄 Renomeação de classe**: `SegmentacaoPessoa` → `SegmentacaoDeepLabV3`
+- **🗂️ Limpeza de arquivos**: Removido arquivo duplicado `segmentacao_imagens.py`
+- **📦 Organização melhorada**: Mantido apenas `segmentacao_imagens_Deeplabv3.py`
+- **🔗 Atualizações de imports**: Todos os módulos atualizados para nova nomenclatura
+
+#### 💡 Motivação da Mudança
+```mermaid
+graph TD
+    A["❌ Antes"] --> A1["SegmentacaoPessoa"]
+    A --> A2["segmentacao_imagens.py"]
+    A --> A3["segmentacao_imagens_Deeplabv3.py"]
+    A --> A4["Nomes confusos"]
+    
+    B["✅ Depois"] --> B1["SegmentacaoDeepLabV3"]
+    B --> B2["segmentacao_imagens_Deeplabv3.py"]
+    B --> B3["Nome descritivo"]
+    B --> B4["Arquivo único"]
+    
+    style A fill:#ffebee,stroke:#c62828
+    style B fill:#e8f5e8,stroke:#2e7d32
+    style A1,A2,A3,A4 fill:#ffcdd2
+    style B1,B2,B3,B4 fill:#c8e6c9
+```
+
+#### 🔄 Arquivos Impactados
+```python
+# Atualizações realizadas:
+modelo_segmentacao.py:
+├── from segmentacao_imagens_Deeplabv3 import SegmentacaoDeepLabV3  # ✅
+└── self.segmentador = SegmentacaoDeepLabV3(...)                   # ✅
+
+segmentacao_imagens_Deeplabv3.py:
+└── class SegmentacaoDeepLabV3:                                    # ✅
+
+# Arquivos removidos:
+❌ segmentacao_imagens.py  # Arquivo duplicado desnecessário
+```
+
+#### 🎯 Benefícios
+- **📝 Nomenclatura clara**: O nome da classe reflete a tecnologia (DeepLabV3)
+- **🧹 Código limpo**: Eliminação de duplicação desnecessária
+- **🔧 Manutenibilidade**: Estrutura mais organizadas para futuras expansões
+- **⚡ Performance**: Menor overhead de arquivos duplicados
 
 ### [0.2.0] - 2025-09-08 - Processamento de Imagens 🖼️
 
@@ -83,7 +134,7 @@ ModeloSegmentacao():
 ├── _calcular_estatisticas()     # 📊 Métricas de qualidade
 └── salvar_resultados()          # 💾 Exportar resultados
 
-SegmentacaoPessoa():
+SegmentacaoDeepLabV3():
 ├── segmentar_pessoa()           # 🎯 Segmentação principal
 ├── melhorar_contraste()         # ✨ Pré-processamento
 ├── pos_processar_mascara()      # 🔧 Limpeza de ruído

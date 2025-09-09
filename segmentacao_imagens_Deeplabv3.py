@@ -13,8 +13,8 @@ import cv2
 import matplotlib.pyplot as plt
 
 
-class SegmentacaoPessoa:
-    def __init__(self, device=None, confidence_threshold=0.5, min_area=1000, 
+class SegmentacaoDeepLabV3:
+    def __init__(self, device=None, confidence_threshold=0.5, min_area=100, 
                  morph_kernel_size=5, target_size=None, enhance_contrast=True,
                  contrast_factor=1.5, brightness_factor=1.0, gamma_correction=1.0):
         """

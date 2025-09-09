@@ -2,10 +2,19 @@
 
 Sistema modular para processamento e análise de dados de imagens sintéticas com medidas corporais.
 
-🚀 **Versão 0.2.0** - Segmentação de imagens implementada!  
+🚀 **Versão 0.2.1** - Refatoração e otimização de código!  
 📋 [Ver CHANGELOG.md](CHANGELOG.md) para histórico detalhado com fluxo Mermaid
 
 ## 📋 Evolução do Desenvolvimento
+
+### 🔧 v0.2.1 - Refatoração e Otimização (ATUAL)
+O projeto passou por **refatoração de nomenclatura e limpeza de código**!
+
+**🛠️ Melhorias Implementadas:**
+- **🔄 Renomeação de classe**: `SegmentacaoPessoa` → `SegmentacaoDeepLabV3`
+- **🗂️ Limpeza de arquivos**: Removido arquivo duplicado `segmentacao_imagens.py`
+- **📦 Organização melhorada**: Mantido apenas `segmentacao_imagens_Deeplabv3.py`
+- **🔗 Atualizações de imports**: Todos os módulos sincronizados
 
 ### 🎯 v0.2.0 - Sistema de Segmentação de Imagens
 O projeto evoluiu para **processamento avançado de imagens** usando Deep Learning!
@@ -28,9 +37,27 @@ O projeto começou focando na **validação e estruturação robusta dos dados**
 
 ### 🏗️ O que foi Implementado
 
+**🎯 v0.2.1 - Motor de Segmentação Otimizado: Classe `SegmentacaoDeepLabV3`**
+```python
+# Arquitetura refatorada e otimizada:
+1. 🔄 SegmentacaoDeepLabV3 (nome mais descritivo da tecnologia)
+2. 🗂️ Arquivo único: segmentacao_imagens_Deeplabv3.py
+3. 📦 Imports organizados e atualizados
+4. 🔧 Código mais limpo e manutenível
+
+# Funcionalidades mantidas (sem alteração):
+1. 🤖 Modelo DeepLabV3 com ResNet50 para detecção de pessoas
+2. 🖼️ Processamento automático de front.png + left.png por ID
+3. ✨ Pré-processamento: melhoria de contraste, CLAHE, sharpening
+4. 🔧 Pós-processamento: filtros morfológicos, remoção de ruído
+5. 📊 Estatísticas: área da pessoa, percentuais, qualidade da detecção
+6. 👁️ Visualização: silhuetas, máscaras, comparações lado-a-lado
+7. 💾 Exportação: resultados em JSON, imagens processadas
+```
+
 **🎯 v0.2.0 - Motor de Segmentação: Classe `ModeloSegmentacao`**
 ```python
-# Funcionalidades de processamento de imagens implementadas:
+# Funcionalidades de processamento de imagens (v0.2.0):
 1. 🤖 Modelo DeepLabV3 com ResNet50 para detecção de pessoas
 2. 🖼️ Processamento automático de front.png + left.png por ID
 3. ✨ Pré-processamento: melhoria de contraste, CLAHE, sharpening
@@ -84,7 +111,7 @@ githubinovia/                    # 📁 Código principal
 ├── main.py                     # 🎯 Coordenador principal
 ├── importa_dados.py            # 📊 Gerenciamento de dados
 ├── modelo_segmentacao.py       # 🤖 Coordenador de segmentação  
-├── segmentacao_imagens.py      # 🖼️ Processamento DeepLabV3
+├── segmentacao_imagens_Deeplabv3.py      # 🖼️ Processamento DeepLabV3
 ├── requirements.txt            # 📦 Dependências (incluindo PyTorch)
 ├── CHANGELOG.md               # 📝 Histórico com mermaid
 └── README.md                  # 📖 Documentação
@@ -156,7 +183,7 @@ python main.py
 | Módulo | Status | Descrição |
 |--------|--------|-----------|
 | `ModeloSegmentacao` | ✅ | Coordenador principal de processamento |
-| `SegmentacaoPessoa` | ✅ | Engine DeepLabV3 para segmentação |
+| `SegmentacaoDeepLabV3` | ✅ | Engine DeepLabV3 para segmentação |
 | `processar_dataset()` | ✅ | Pipeline completa para múltiplas imagens |
 | `segmentar_pessoa()` | ✅ | Detecção semântica de pessoas |
 | `melhorar_contraste()` | ✅ | Pré-processamento com CLAHE e sharpening |
@@ -182,15 +209,31 @@ python main.py
 
 ## 🛣️ Próximos Passos
 
-1. **🧮 Análise de Correlações** - Relacionar medidas ↔ silhuetas
+### 🎯 Roadmap Atualizado
+```mermaid
+graph LR
+    A["✅ v0.1.0<br/>Base Dados"] --> B["✅ v0.2.0<br/>Segmentação"]
+    B --> C["✅ v0.2.1<br/>Refatoração"]
+    C --> D["🔄 v0.3.0<br/>Analytics"]
+    D --> E["🎯 v0.4.0<br/>Interface"]
+    E --> F["🚀 v0.5.0<br/>Deploy"]
+    
+    classDef done fill:#4CAF50,stroke:#2E7D32,color:#fff
+    classDef next fill:#FF9800,stroke:#F57C00,color:#fff
+    
+    class A,B,C done
+    class D,E,F next
+```
+
+1. **🧮 v0.3.0 - Análise de Correlações** - Relacionar medidas ↔ silhuetas
 2. **📈 Analytics Avançados** - Estatísticas e insights automatizados  
-3. **🎛️ Interface Gráfica** - Dashboard interativo com Streamlit
+3. **🎛️ v0.4.0 - Interface Gráfica** - Dashboard interativo com Streamlit
 4. **🧪 Testes Automatizados** - Validação contínua de qualidade
-5. **🚀 Deploy** - Containerização e produção
+5. **🚀 v0.5.0 - Deploy** - Containerização e produção
 
 ## 📈 Status Atual
 
-🚀 **Versão 0.2.0** - Sistema de segmentação implementado!  
+🚀 **Versão 0.2.1** - Refatoração e otimização de código!  
 📋 [Ver CHANGELOG.md](CHANGELOG.md) para histórico detalhado com fluxo Mermaid
 
 ### 🎯 Tecnologias Utilizadas
