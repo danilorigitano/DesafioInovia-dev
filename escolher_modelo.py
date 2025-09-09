@@ -164,8 +164,7 @@ def processar_com_modelo(modelo: Union[ModeloSegmentacaoDeepLabV3, ModeloSegment
     if tipo_modelo == 'parametrizacao':
         resultado_geral = modelo.processar_dataset(
             limite_registros=limite_registros, 
-            exibir_progresso=True,
-            salvar_resultados_intermediarios=False
+            exibir_progresso=True
         )
         
         # Exibir silhuetas automaticamente para o método de parametrização

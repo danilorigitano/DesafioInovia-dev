@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """
 PROJETO INOVIA - Sistema de Segmentação de Imagens
-Versão 0.2.2 - Arquitetura Modular Refatorada
+Versão 0.2.3 - Otimizações Avançadas de Performance
 
 Este é o módulo principal que coordena todo o fluxo de execução do projeto,
 desde a importação dos dados até o processamento final com os modelos de segmentação.
+Com otimizações revolucionárias de vectorização NumPy e early stopping MSE.
 """
 
 import sys
@@ -27,9 +28,10 @@ def exibir_cabecalho() -> None:
     print("="*60)
     print("🚀 PROJETO INOVIA - Sistema de Segmentação de Imagens")
     print("="*60)
-    print("📋 Versão 0.2.2 - Arquitetura Modular Refatorada")
+    print("📋 Versão 0.2.3 - Otimizações Avançadas de Performance")
     print("🎯 Processamento inteligente de imagens médicas")
-    print("📊 Múltiplos métodos de segmentação disponíveis")
+    print("📊 Múltiplos métodos de segmentação com vectorização NumPy")
+    print("⚡ Early stopping MSE e processamento em batches")
     print("="*60)
     print("⚡ Iniciando processamento...")
 

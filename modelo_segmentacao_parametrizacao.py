@@ -37,7 +37,7 @@ class ModeloSegmentacaoParametrizacao:
                  target_width: int = 512,
                  target_height: int = 382,
                  morph_kernel_size: int = 5,
-                 min_area: int = 100,
+                 min_area: int = 10,
                  enhance_contrast: bool = True,
                  num_workers: int = 1):
         """
@@ -371,15 +371,13 @@ class ModeloSegmentacaoParametrizacao:
         return resultado_variavel
     
     def processar_dataset(self, limite_registros: Optional[int] = None,
-                         exibir_progresso: bool = True,
-                         salvar_resultados_intermediarios: bool = False) -> Dict:
+                         exibir_progresso: bool = True) -> Dict:
         """
         Processa todo o dataset usando parametrização com funções indicadoras
         
         Args:
             limite_registros (int, optional): Limitar o número de registros processados
             exibir_progresso (bool): Se deve exibir progresso detalhado
-            salvar_resultados_intermediarios (bool): Se deve salvar resultados a cada variável
             
         Returns:
             Dict: Resultado geral do processamento
@@ -406,10 +404,6 @@ class ModeloSegmentacaoParametrizacao:
             
             resultado_variavel = self.processar_variavel(variavel)
             self.resultados.append(resultado_variavel)
-            
-            # Salvar resultados intermediários se solicitado
-            if salvar_resultados_intermediarios and i % 10 == 0:
-                self._salvar_resultados_intermediarios(i, total_variaveis)
         
         # Calcular estatísticas globais
         tempo_total = time.time() - inicio_tempo_total
@@ -420,7 +414,6 @@ class ModeloSegmentacaoParametrizacao:
         logger.info(f"🎯 Processamento concluído em {stats['tempo_total']:.1f}s:")
         logger.info(f"   • Variáveis: {stats['variaveis_sucesso']}/{stats['total_variaveis']} ({stats['taxa_sucesso_variaveis']:.1f}%)")
         logger.info(f"   • Imagens: {stats['imagens_sucesso']}/{stats['total_imagens']} ({stats['taxa_sucesso_imagens']:.1f}%)")
-        logger.info(f"   • Performance: {stats['tempo_medio_por_variavel']:.2f}s/variável, {stats['tempo_medio_por_imagem']:.2f}s/imagem")
         logger.info(f"   • Qualidade: MSE {stats['mse_global']:.3f}, RMS {stats['rms_global']:.3f}")
         
         return {
@@ -444,23 +437,22 @@ class ModeloSegmentacaoParametrizacao:
         
         # Estatísticas básicas
         total_variaveis = len(self.resultados)
-        variaveis_sucesso = sum(1 for r in self.resultados if r['sucesso'])
-        total_imagens = sum(r['total_imagens'] for r in self.resultados)
-        imagens_sucesso = sum(r['imagens_sucesso'] for r in self.resultados)
+        variaveis_sucesso = sum(1 for r in self.resultados if r.get('sucesso', False))
+        total_imagens = sum(r.get('total_imagens', 0) for r in self.resultados)
+        imagens_sucesso = sum(r.get('imagens_sucesso', 0) for r in self.resultados)
         
         # Métricas de tempo
-        tempos_variaveis = [r['tempo_processamento'] for r in self.resultados]
-        tempo_medio_variavel = np.mean(tempos_variaveis) if tempos_variaveis else 0
-        tempo_medio_imagem = tempo_total / total_imagens if total_imagens > 0 else 0
+        tempos_variaveis = [r.get('tempo_processamento', 0) for r in self.resultados]
         
         # Métricas de qualidade (apenas de sucessos)
         mses_globais = []
         rmss_globais = []
         
         for resultado in self.resultados:
-            if resultado['sucesso']:
-                mse = resultado['metricas_resumo'].get('mse_medio', 0)
-                rms = resultado['metricas_resumo'].get('rms_medio', 0)
+            if resultado.get('sucesso', False):
+                metricas_resumo = resultado.get('metricas_resumo', {})
+                mse = metricas_resumo.get('mse_medio', 0)
+                rms = metricas_resumo.get('rms_medio', 0)
                 if mse > 0:  # Filtrar valores inválidos
                     mses_globais.append(mse)
                 if rms > 0:
@@ -479,58 +471,11 @@ class ModeloSegmentacaoParametrizacao:
             'imagens_falha': total_imagens - imagens_sucesso,
             'taxa_sucesso_variaveis': (variaveis_sucesso / total_variaveis) * 100 if total_variaveis > 0 else 0,
             'taxa_sucesso_imagens': (imagens_sucesso / total_imagens) * 100 if total_imagens > 0 else 0,
-            'tempo_medio_por_variavel': tempo_medio_variavel,
-            'tempo_medio_por_imagem': tempo_medio_imagem,
             'mse_global': mse_global,
             'rms_global': rms_global,
             'throughput_variaveis_por_minuto': (total_variaveis / (tempo_total / 60)) if tempo_total > 0 else 0,
             'throughput_imagens_por_minuto': (total_imagens / (tempo_total / 60)) if tempo_total > 0 else 0
         }
-    
-    def _salvar_resultados_intermediarios(self, atual: int, total: int):
-        """
-        Salva resultados intermediários durante o processamento
-        """
-        try:
-            import json
-            
-            # Custom JSON encoder para tipos numpy
-            class NumpyEncoder(json.JSONEncoder):
-                def default(self, obj):
-                    if isinstance(obj, np.integer):
-                        return int(obj)
-                    elif isinstance(obj, np.floating):
-                        return float(obj)
-                    elif isinstance(obj, np.ndarray):
-                        return obj.tolist()
-                    return super(NumpyEncoder, self).default(obj)
-            
-            arquivo_temp = self.project_root / f"resultados_temp_parametrizacao_{atual}de{total}.json"
-            
-            # Preparar dados serializáveis
-            dados_serializaveis = []
-            for resultado in self.resultados:
-                resultado_copia = resultado.copy()
-                # Remover dados não serializáveis
-                for img_result in resultado_copia.get('resultados_imagens', []):
-                    if 'resultado_segmentacao' in img_result:
-                        # Manter apenas dados essenciais
-                        seg_result = img_result['resultado_segmentacao']
-                        if seg_result:
-                            img_result['resultado_segmentacao'] = {
-                                'sucesso': seg_result.get('sucesso', False),
-                                'mse_global': seg_result.get('mse_global', 0),
-                                'rms_global': seg_result.get('rms_global', 0)
-                            }
-                dados_serializaveis.append(resultado_copia)
-            
-            with open(arquivo_temp, 'w', encoding='utf-8') as f:
-                json.dump(dados_serializaveis, f, indent=2, ensure_ascii=False, cls=NumpyEncoder)
-            
-            logger.debug(f"💾 Backup intermediário salvo: {arquivo_temp}")
-            
-        except Exception as e:
-            logger.warning(f"Erro ao salvar backup intermediário: {e}")
     
     def salvar_resultados(self, caminho_saida: Optional[str] = None,
                          incluir_mascaras: bool = False,
@@ -632,50 +577,6 @@ class ModeloSegmentacaoParametrizacao:
         except Exception as e:
             logger.error(f"❌ Erro ao salvar resultados: {e}")
             return ""
-    
-    def gerar_relatorio_resumo(self) -> str:
-        """
-        Gera um relatório resumido do processamento
-        
-        Returns:
-            str: Relatório formatado
-        """
-        if not self.resultados or not self.estatisticas_globais:
-            return "Nenhum resultado disponível para relatório."
-        
-        stats = self.estatisticas_globais
-        
-        relatorio = f"""
-╔══════════════════════════════════════════════════════════════════════════════╗
-║                    RELATÓRIO DE SEGMENTAÇÃO POR PARAMETRIZAÇÃO               ║
-╠══════════════════════════════════════════════════════════════════════════════╣
-║ CONFIGURAÇÃO:                                                                ║
-║ • Método: Parametrização com Funções Indicadoras                            ║
-║ • Dimensões: {self.target_width}x{self.target_height} pixels                                            ║
-║ • Funções indicadoras: {self.target_height} (uma por linha)                                   ║
-║ • Kernel morfológico: {self.morph_kernel_size}x{self.morph_kernel_size}                                               ║
-║ • Contraste aprimorado: {'Sim' if self.enhance_contrast else 'Não'}                                          ║
-╠══════════════════════════════════════════════════════════════════════════════╣
-║ RESULTADOS:                                                                  ║
-║ • Total de variáveis: {stats['total_variaveis']:,}                                               ║
-║ • Variáveis processadas com sucesso: {stats['variaveis_sucesso']:,} ({stats['taxa_sucesso_variaveis']:.1f}%)                    ║
-║ • Total de imagens: {stats['total_imagens']:,}                                                 ║
-║ • Imagens processadas com sucesso: {stats['imagens_sucesso']:,} ({stats['taxa_sucesso_imagens']:.1f}%)                      ║
-╠══════════════════════════════════════════════════════════════════════════════╣
-║ PERFORMANCE:                                                                 ║
-║ • Tempo total: {stats['tempo_total']:.1f} segundos ({stats['tempo_total']/60:.1f} minutos)                            ║
-║ • Tempo médio por variável: {stats['tempo_medio_por_variavel']:.2f} segundos                            ║
-║ • Tempo médio por imagem: {stats['tempo_medio_por_imagem']:.2f} segundos                              ║
-║ • Throughput: {stats['throughput_variaveis_por_minuto']:.1f} variáveis/min, {stats['throughput_imagens_por_minuto']:.1f} imagens/min           ║
-╠══════════════════════════════════════════════════════════════════════════════╣
-║ QUALIDADE:                                                                   ║
-║ • MSE global: {stats['mse_global']:.3f}                                                   ║
-║ • RMS global: {stats['rms_global']:.3f}                                                    ║
-║ • Eficiência: {stats['rms_global']:.3f} (Root Mean Square)                                ║
-╚══════════════════════════════════════════════════════════════════════════════╝
-        """
-        
-        return relatorio.strip()
     
     def visualizar_amostra_resultados(self, num_amostras: int = 3,
                                     tipo_visualizacao: str = 'completo'):
@@ -861,9 +762,6 @@ if __name__ == "__main__":
         
         # Processar dataset
         resultados = modelo.processar_dataset(limite_registros=3)
-        
-        # Gerar relatório
-        print(modelo.gerar_relatorio_resumo())
         
         # Salvar resultados
         arquivo_salvo = modelo.salvar_resultados()
