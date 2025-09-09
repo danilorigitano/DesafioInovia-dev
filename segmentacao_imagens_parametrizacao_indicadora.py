@@ -2,7 +2,7 @@
 Segmentação de imagens usando parametrização com funções indicadoras - v0.2.3 OTIMIZADA.
 - Redimensiona imagem para 512x382 pixels
 - Cria 382 funções indicadoras (uma para cada linha)
-- Cada função começa em 0 (preto), atinge um valor máximo no meio, volta a 0
+- Cada função começa em 0 (valor base), atinge um valor máximo no meio, volta a 0
 - OTIMIZAÇÕES v0.2.3: Vectorização NumPy, processamento em batches, early stopping
 - MSE (Mean Square Error) rigoroso - MÉTRICA ÚNICA com normalização
 - Processamento 3-5x mais rápido com operações matriciais NumPy
@@ -109,13 +109,13 @@ class SegmentacaoParametrizacaoIndicadora:
     def _gerar_funcao_indicadora_linha(self, linha_idx, largura, pixel_inicio=200, pixel_fim=400, valor_maximo=100):
         """
         Gera uma função indicadora para uma linha específica.
-        Implementa a lógica: 0 (preto) -> valor_maximo (branco) -> 0 (preto)
+        Implementa a lógica: 0 (valor base) -> valor_maximo (branco) -> 0 (valor base)
         
         Args:
             linha_idx: Índice da linha (0 a 381)
             largura: Largura da imagem (512)
-            pixel_inicio: Pixel onde começa a subir (entre 5 e metade+50)
-            pixel_fim: Pixel onde volta a 0 (entre metade-50 e fim-5)
+            pixel_inicio: Pixel onde começa a subir (entre 0 e metade+50)
+            pixel_fim: Pixel onde volta a 0 (entre metade-50 e fim-0)
             valor_maximo: Valor máximo no meio (intensidade da cor branca)
             
         Note:
@@ -133,7 +133,7 @@ class SegmentacaoParametrizacaoIndicadora:
         # pixel_fim = max(pixel_inicio + 10, min(largura - 5, pixel_fim))  # Garantia mínima
         
         # Validação única dos parâmetros com ranges otimizados
-        pixel_inicio = max(5, min(metade + 100, pixel_inicio))  # 5 a 356
+        pixel_inicio = max(5, min(metade + 50, pixel_inicio))  # 5 a 306
         pixel_fim = max(metade - 50, min(largura - 5, pixel_fim))  # 206 a 507
         
         # Garantia simples: pixel_inicio < pixel_fim
@@ -146,12 +146,9 @@ class SegmentacaoParametrizacaoIndicadora:
         # Garantir que valor_maximo está no range válido
         valor_maximo = max(40, min(255, valor_maximo))
         
-        # OTIMIZAÇÃO SUGERIDA #5: Pre-alocar arrays com dtype específico
-        # funcao = np.empty(largura, dtype=np.float32)  # empty é mais rápido que zeros
-        # funcao.fill(0)  # Preencher apenas se necessário
         
-        # Criar função inicializada com zeros
-        funcao = np.zeros(largura, dtype=np.float32)
+        # Criar função inicializada com valor base 0 (revertido de 5 para 0)
+        funcao = np.full(largura, 0, dtype=np.float32)
         
         # Região central: valor_maximo
         funcao[pixel_inicio:pixel_fim+1] = valor_maximo
@@ -163,14 +160,14 @@ class SegmentacaoParametrizacaoIndicadora:
         # Suavização nas transições (qualidade original)
         tamanho_transicao = min(5, (pixel_fim - pixel_inicio) // 4)
         if tamanho_transicao > 0:
-            # Suavização da subida usando slicing
+            # Suavização da subida usando slicing (de 0 para valor_maximo)
             inicio_suave = pixel_inicio
             fim_suave = pixel_inicio + tamanho_transicao
             if fim_suave <= largura:
                 fatores_subida = np.linspace(0, valor_maximo, tamanho_transicao + 1)[1:]
                 funcao[inicio_suave:fim_suave] = fatores_subida[:fim_suave-inicio_suave]
             
-            # Suavização da descida usando slicing
+            # Suavização da descida usando slicing (de valor_maximo para 0)
             inicio_desc = max(0, pixel_fim - tamanho_transicao + 1)
             fim_desc = pixel_fim + 1
             if inicio_desc < fim_desc:
@@ -235,7 +232,7 @@ class SegmentacaoParametrizacaoIndicadora:
             numpy.ndarray: Array 2D [n_funcoes, largura] com as funções geradas
         """
         n_funcoes = len(inicios)
-        funcoes = np.zeros((n_funcoes, largura), dtype=np.float32)
+        funcoes = np.full((n_funcoes, largura), 0, dtype=np.float32)  # Revertido para valor base 0
         
         # Vectorização: processa todas as funções simultaneamente
         for i in range(n_funcoes):
@@ -336,12 +333,14 @@ class SegmentacaoParametrizacaoIndicadora:
         # SEMPRE garantindo pixel_inicio < pixel_fim
         # valor_maximo: baseado na intensidade da linha com busca simplificada
         
+        '''
         # OTIMIZAÇÃO: Análise vectorizada da linha (mais rápida)
         intensidade_stats = np.array([
             np.mean(linha_pixels), np.max(linha_pixels), np.min(linha_pixels)
         ])
         intensidade_media, intensidade_max, intensidade_min = intensidade_stats
-        
+        '''
+
         # Novos ranges conforme especificação:
         # pixel_inicio (a): mínimo 5, máximo maior que metade (256+)
         # pixel_fim (b): um pouco menor que metade até fim-5
@@ -351,13 +350,11 @@ class SegmentacaoParametrizacaoIndicadora:
         # IMPLEMENTADO: Step 5 para maior precisão (conforme solicitado)
         inicio_range = range(10, metade + 100, 5)  # Step 1 para maior precisão
 
-
         # OTIMIZAÇÃO SUGERIDA #12: Simplificar seleção de valor_range
         # IMPLEMENTADO: Usar intensidade_max diretamente (sem varredura)
         # Definir valor_maximo como intensidade_max da linha
-        valor_maximo_fixo = int(intensidade_max)
 
-        valor_maximo_fixo = valor_maximo_fixo * 0.6  # Ajuste para evitar saturação
+        valor_maximo_fixo = 150  # Ajuste para evitar saturação
         
         # Não fazer varredura sobre valor_maximo - usar valor fixo baseado na intensidade da linha
         
@@ -365,8 +362,8 @@ class SegmentacaoParametrizacaoIndicadora:
         # max_tentativas = min(50, len(inicio_range) * 2)  # Reduzir para linhas simples
         # REVERTIDO: Busca com tentativas originais para manter qualidade
         tentativas = 0
-        max_tentativas = 4000  # Mantém 4000 para melhor qualidade
-        
+        max_tentativas = 10000  # Mantém 10000 para melhor qualidade
+
         melhor_mse_global = float('inf')
         
         # OTIMIZAÇÃO #8 IMPLEMENTADA: Processamento vectorizado em lotes
@@ -398,10 +395,10 @@ class SegmentacaoParametrizacaoIndicadora:
                         
             if len(combinacoes_validas) >= max_tentativas:
                 break
-        
-        # OTIMIZAÇÃO #8: Processamento vectorizado em lotes de 50 combinações
-        batch_size = 50  # Processar 50 combinações por vez para economia de memória
-        
+
+        # OTIMIZAÇÃO #8: Processamento vectorizado em lotes de 100 combinações
+        batch_size = 100  # Processar 100 combinações por vez para economia de memória
+
         for i in range(0, len(combinacoes_validas), batch_size):
             batch = combinacoes_validas[i:i+batch_size]
             
@@ -413,15 +410,15 @@ class SegmentacaoParametrizacaoIndicadora:
             fins_batch = np.array([combo[1] for combo in batch])
             
             try:
-                # OTIMIZAÇÃO #8: Gerar múltiplas funções de uma vez
+                # Gerar múltiplas funções de uma vez
                 funcoes_batch = self._gerar_multiplas_funcoes_vectorizadas(
                     largura, inicios_batch, fins_batch, valor_maximo_fixo
                 )
                 
-                # OTIMIZAÇÃO #8: Calcular MSE para todas as funções simultaneamente
+                # Calcular MSE para todas as funções simultaneamente
                 mse_valores = self._calcular_mse_vectorizado(linha_pixels, funcoes_batch)
-                
-                # OTIMIZAÇÃO #8: Encontrar melhor resultado no lote usando NumPy
+
+                # Encontrar melhor resultado no lote usando NumPy
                 melhor_idx_lote = np.argmin(mse_valores)
                 melhor_mse_lote = mse_valores[melhor_idx_lote]
                 
@@ -429,7 +426,6 @@ class SegmentacaoParametrizacaoIndicadora:
                 if melhor_mse_lote < melhor_mse_global:
                     melhor_mse_global = melhor_mse_lote
                     
-                    # OTIMIZAÇÃO #17 IMPLEMENTADA: Usar apenas MSE normalizado
                     score_mse = melhor_mse_lote / (255.0 ** 2)
                     
                     if score_mse < melhor_score:
