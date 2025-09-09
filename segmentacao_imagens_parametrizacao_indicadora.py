@@ -312,6 +312,12 @@ class SegmentacaoParametrizacaoIndicadora:
         Returns:
             dict: Melhores parâmetros encontrados
         """
+
+        parametro_step = 2
+        parametro_max_tentativas = 100000  # Limite de tentativas para busca
+        parametro_batch_size = 500  # Processar 500 combinações por vez
+
+
         melhor_score = float('inf')  # Para MSE, menor é melhor
         melhores_params = {
             'pixel_inicio': 100,
@@ -347,8 +353,8 @@ class SegmentacaoParametrizacaoIndicadora:
         metade = largura // 2  # 256 para largura 512
         
         # OTIMIZAÇÃO SUGERIDA #11: Reduzir steps para menos iterações
-        # IMPLEMENTADO: Step 5 para maior precisão (conforme solicitado)
-        inicio_range = range(10, metade + 100, 5)  # Step 1 para maior precisão
+        # IMPLEMENTADO: Step parametro_step para maior precisão (conforme solicitado)
+        inicio_range = range(10, metade + 100, parametro_step)  # Step parametro_step para maior precisão
 
         # OTIMIZAÇÃO SUGERIDA #12: Simplificar seleção de valor_range
         # IMPLEMENTADO: Usar intensidade_max diretamente (sem varredura)
@@ -362,7 +368,7 @@ class SegmentacaoParametrizacaoIndicadora:
         # max_tentativas = min(50, len(inicio_range) * 2)  # Reduzir para linhas simples
         # REVERTIDO: Busca com tentativas originais para manter qualidade
         tentativas = 0
-        max_tentativas = 10000  # Mantém 10000 para melhor qualidade
+        max_tentativas = parametro_max_tentativas  # Mantém 10000 para melhor qualidade
 
         melhor_mse_global = float('inf')
         
@@ -380,9 +386,9 @@ class SegmentacaoParametrizacaoIndicadora:
             fim_max = largura - 5  # Até 507
             
             if fim_min < fim_max:  # Só processa se há range válido
-                # IMPLEMENTADO: Step 5 para maior precisão (conforme solicitado)
-                fim_range = range(fim_min, fim_max, 5)  # Step 1 para maior precisão
-                
+                # IMPLEMENTADO: Step parametro_step para maior precisão (conforme solicitado)
+                fim_range = range(fim_min, fim_max, parametro_step)  # Step parametro_step para maior precisão
+
                 for pixel_fim in fim_range:
                     # Validação adicional: garante pixel_inicio < pixel_fim
                     if pixel_inicio >= pixel_fim:
@@ -396,8 +402,8 @@ class SegmentacaoParametrizacaoIndicadora:
             if len(combinacoes_validas) >= max_tentativas:
                 break
 
-        # OTIMIZAÇÃO #8: Processamento vectorizado em lotes de 100 combinações
-        batch_size = 100  # Processar 100 combinações por vez para economia de memória
+        # Processamento vectorizado em lotes de parametro_batch_size combinações
+        batch_size = parametro_batch_size  # Processar parametro_batch_size combinações por vez para economia de memória
 
         for i in range(0, len(combinacoes_validas), batch_size):
             batch = combinacoes_validas[i:i+batch_size]
@@ -455,7 +461,7 @@ class SegmentacaoParametrizacaoIndicadora:
         if melhor_score == float('inf') or melhores_params['mse'] > 400:  # Critério original
             
             # OTIMIZAÇÃO #8: Busca de fallback também vectorizada
-            inicio_range_refinado = range(5, metade + 100, 5)  # Range original
+            inicio_range_refinado = range(5, metade + 100, parametro_step)  # Range original
             
             # Gerar combinações para fallback
             combinacoes_fallback = []
@@ -464,7 +470,7 @@ class SegmentacaoParametrizacaoIndicadora:
                 fim_max = largura - 5
                 
                 if fim_min < fim_max:
-                    fim_range_refinado = range(fim_min, fim_max, 5)  # Step original
+                    fim_range_refinado = range(fim_min, fim_max, parametro_step)  # Step original
                     
                     for pixel_fim in fim_range_refinado:
                         if pixel_inicio >= pixel_fim:
