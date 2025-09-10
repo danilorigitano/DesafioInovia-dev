@@ -396,24 +396,24 @@ class SegmentacaoDeepLabV3:
         
         # Imagem original
         axes[0].imshow(imagem_original)
-        axes[0].set_title('Imagem Original')
+        axes[0].set_title('Imagem Original', color='blue')
         axes[0].axis('off')
         
         # Máscara da pessoa
         axes[1].imshow(mascara_pessoa, cmap='gray')
-        axes[1].set_title('Máscara da Pessoa')
+        axes[1].set_title('Máscara da Pessoa', color='blue')
         axes[1].axis('off')
         
         # Imagem com máscara sobreposta
         imagem_com_mascara = self.aplicar_mascara(imagem_original, mascara_pessoa)
         axes[2].imshow(imagem_com_mascara)
-        axes[2].set_title('Imagem com Máscara')
+        axes[2].set_title('Imagem com Máscara', color='blue')
         axes[2].axis('off')
         
         # Silhueta extraída
         silhueta = self.extrair_silhueta(imagem_original, mascara_pessoa)
         axes[3].imshow(silhueta)
-        axes[3].set_title('Silhueta Extraída')
+        axes[3].set_title('Silhueta Extraída', color='blue')
         axes[3].axis('off')
         
         plt.tight_layout()

@@ -189,7 +189,7 @@ class ModeloSegmentacaoParametrizacao:
             elif self.metodo_segmentacao == "colunas":
                 resultado_segmentacao = self.segmentador.segmentar_por_colunas(str(caminho_imagem))
             elif self.metodo_segmentacao == "combinado":
-                resultado_segmentacao = self.segmentador.segmentar_combinado(str(caminho_imagem), metodo_combinacao='intersecao')
+                resultado_segmentacao = self.segmentador.segmentar_separado_e_unido(str(caminho_imagem))
             else:
                 raise ValueError(f"Método de segmentação inválido: {self.metodo_segmentacao}")
             
@@ -604,6 +604,8 @@ class ModeloSegmentacaoParametrizacao:
             tipo_visualizacao (str): 'simples', 'completo' ou 'metricas'
         """
         try:
+            import matplotlib
+            matplotlib.use('TkAgg')  # Força backend interativo no Windows
             import matplotlib.pyplot as plt
             
             # Filtrar resultados com sucesso
@@ -639,11 +641,21 @@ class ModeloSegmentacaoParametrizacao:
     
     def _visualizar_resultado_completo(self, resultado: Dict, num_fig: int):
         """Visualização completa com original, processada e máscara"""
+        import matplotlib
+        matplotlib.use('TkAgg')  # Força backend interativo
         import matplotlib.pyplot as plt
         
         variavel = resultado['variavel']
         imagens_sucesso = [img for img in resultado['resultados_imagens'] if img['sucesso']]
         
+        # Verificar se é método combinado (4 resultados)
+        if self.metodo_segmentacao == "combinado" and imagens_sucesso:
+            primeiro_resultado = imagens_sucesso[0]['resultado_segmentacao']
+            if 'mascara_linhas_final' in primeiro_resultado:
+                self._visualizar_4_resultados(resultado, num_fig)
+                return
+        
+        # Visualização padrão para outros métodos
         fig, axes = plt.subplots(len(imagens_sucesso), 3, figsize=(15, 5 * len(imagens_sucesso)))
         fig.suptitle(f'Resultado #{num_fig} - Variável: {variavel}', fontsize=16)
         
@@ -657,13 +669,13 @@ class ModeloSegmentacaoParametrizacao:
             # Imagem original
             img_original = seg_result['imagem_original']
             axes[i, 0].imshow(img_original)
-            axes[i, 0].set_title(f'{tipo_img.capitalize()} - Original')
+            axes[i, 0].set_title(f'{tipo_img.capitalize()} - Original', color='blue')
             axes[i, 0].axis('off')
             
             # Imagem em grayscale
             img_gray = seg_result['imagem_gray']
             axes[i, 1].imshow(img_gray, cmap='gray')
-            axes[i, 1].set_title(f'{tipo_img.capitalize()} - Grayscale')
+            axes[i, 1].set_title(f'{tipo_img.capitalize()} - Grayscale', color='blue')
             axes[i, 1].axis('off')
             
             # Máscara binária
@@ -671,10 +683,82 @@ class ModeloSegmentacaoParametrizacao:
             axes[i, 2].imshow(mascara, cmap='gray')
             mse = seg_result.get('mse_global', 0)
             rms = seg_result.get('rms_global', 0)
-            axes[i, 2].set_title(f'{tipo_img.capitalize()} - Máscara (MSE: {mse:.3f}, RMS: {rms:.3f})')
+            axes[i, 2].set_title(f'{tipo_img.capitalize()} - Máscara (MSE: {mse:.3f}, RMS: {rms:.3f})', color='blue')
             axes[i, 2].axis('off')
         
         plt.tight_layout()
+    
+    def _visualizar_4_resultados(self, resultado: Dict, num_fig: int):
+        """Visualização dos 4 resultados: linhas, colunas, união e intersecção"""
+        import matplotlib
+        matplotlib.use('TkAgg')  # Força backend interativo
+        import matplotlib.pyplot as plt
+        
+        variavel = resultado['variavel']
+        imagens_sucesso = [img for img in resultado['resultados_imagens'] if img['sucesso']]
+        
+        for idx_img, img_result in enumerate(imagens_sucesso):
+            seg_result = img_result['resultado_segmentacao']
+            tipo_img = img_result['tipo_imagem']
+            
+            # Criar figura com 6 subplots lado a lado: original, grayscale, e os 4 resultados
+            fig, axes = plt.subplots(1, 6, figsize=(30, 5))
+            fig.suptitle(f'4 Resultados de Silhuetas - {variavel} - {tipo_img.capitalize()}', fontsize=16, color='blue')
+            
+            # Posição 0: Original
+            img_original = seg_result['imagem_original']
+            axes[0].imshow(img_original)
+            axes[0].set_title('Original', color='blue')
+            axes[0].axis('off')
+            
+            # Posição 1: Grayscale
+            img_gray = seg_result['imagem_gray']
+            axes[1].imshow(img_gray, cmap='gray')
+            axes[1].set_title('Grayscale', color='blue')
+            axes[1].axis('off')
+            
+            # Posição 2: Somente Linhas
+            mascara_linhas = seg_result['mascara_linhas_final']
+            pixels_linhas = seg_result.get('pixels_linhas', 0)
+            mse_linhas = seg_result.get('mse_global_linhas', 0)
+            axes[2].imshow(mascara_linhas, cmap='gray')
+            axes[2].set_title(f'1. Somente Linhas\n{pixels_linhas} pixels | MSE: {mse_linhas:.1f}', color='blue')
+            axes[2].axis('off')
+            
+            # Posição 3: Somente Colunas
+            mascara_colunas = seg_result['mascara_colunas_final']
+            pixels_colunas = seg_result.get('pixels_colunas', 0)
+            mse_colunas = seg_result.get('mse_global_colunas', 0)
+            axes[3].imshow(mascara_colunas, cmap='gray')
+            axes[3].set_title(f'2. Somente Colunas\n{pixels_colunas} pixels | MSE: {mse_colunas:.1f}', color='blue')
+            axes[3].axis('off')
+            
+            # Posição 4: União
+            mascara_uniao = seg_result['mascara_uniao_final']
+            pixels_uniao = seg_result.get('pixels_uniao', 0)
+            mse_combinado = seg_result.get('mse_global_combinado', 0)
+            axes[4].imshow(mascara_uniao, cmap='gray')
+            axes[4].set_title(f'3. União (L ∪ C)\n{pixels_uniao} pixels | MSE: {mse_combinado:.1f}', color='blue')
+            axes[4].axis('off')
+            
+            # Posição 5: Intersecção
+            mascara_intersecao = seg_result['mascara_intersecao_final']
+            pixels_intersecao = seg_result.get('pixels_intersecao', 0)
+            axes[5].imshow(mascara_intersecao, cmap='gray')
+            axes[5].set_title(f'4. Intersecção (L ∩ C)\n{pixels_intersecao} pixels', color='blue')
+            axes[5].axis('off')
+            
+            plt.tight_layout()
+            
+            # Adicionar informações de sobreposição na figura
+            percentual_intersecao_uniao = seg_result.get('percentual_intersecao_uniao', 0)
+            percentual_intersecao_linhas = seg_result.get('percentual_intersecao_linhas', 0)
+            percentual_intersecao_colunas = seg_result.get('percentual_intersecao_colunas', 0)
+            
+            fig.text(0.5, 0.02, 
+                f'Análise de Sobreposição: Intersecção vs União: {percentual_intersecao_uniao:.1f}% | '
+                f'vs Linhas: {percentual_intersecao_linhas:.1f}% | vs Colunas: {percentual_intersecao_colunas:.1f}%', 
+                ha='center', fontsize=10, style='italic')
     
     def _visualizar_resultado_simples(self, resultado: Dict, num_fig: int):
         """Visualização simples apenas com original e máscara"""

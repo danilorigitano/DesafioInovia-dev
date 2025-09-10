@@ -88,10 +88,11 @@ def obter_metodo_parametrizacao() -> str:
             print("   • 1024 funções indicadoras verticais")
             print("   • Análise perpendicular às linhas")
             print()
-            print("3️⃣  Segmentação COMBINADA (híbrido)")
-            print("   • Combina linhas E colunas")
-            print("   • Maior precisão e robustez")
-            print("   • Processamento um pouco mais lento")
+            print("3️⃣  Segmentação COMBINADA (4 resultados)")
+            print("   • Mostra 4 silhuetas: somente linhas, somente colunas,")
+            print("   • união (linha ∪ coluna) e intersecção (linha ∩ coluna)")
+            print("   • Análise completa e comparativa")
+            print("   • Processamento um pouco mais longo")
             print()
             print("="*60)
             
@@ -104,7 +105,7 @@ def obter_metodo_parametrizacao() -> str:
                 print("✅ Método selecionado: Segmentação por COLUNAS")
                 return "colunas"
             elif escolha == "3":
-                print("✅ Método selecionado: Segmentação COMBINADA")
+                print("✅ Método selecionado: Segmentação COMBINADA (4 resultados)")
                 return "combinado"
             else:
                 print("❌ Opção inválida. Digite 1, 2 ou 3, ou pressione Enter para padrão.")
@@ -297,7 +298,7 @@ def exibir_resultados(resultado_geral: dict, tipo_modelo: str, metodo_segmentaca
                 elif metodo_segmentacao == "colunas":
                     print(f"📐 Funções indicadoras verticais processadas")
                 elif metodo_segmentacao == "combinado":
-                    print(f"🔄 Funções indicadoras híbridas (linhas + colunas)")
+                    print(f"🔄 4 resultados de silhuetas: linhas, colunas, união e intersecção")
             print(f"⏱️ Tempo total: {stats.get('tempo_total', 0):.1f}s")
     else:
         print("⚠️ Estatísticas não disponíveis")

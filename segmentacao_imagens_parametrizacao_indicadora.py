@@ -1177,9 +1177,9 @@ class SegmentacaoParametrizacaoIndicadora:
             else:
                 imagem = imagem_path
             
-            print("=" * 60)
+            print("" + "=" * 60 + "")
             print("SEGMENTAÇÃO SEPARADA E UNIÃO - Implementação Solicitada")
-            print("=" * 60)
+            print("" + "=" * 60 + "")
             print(f"Imagem original: {imagem.shape}")
             
             # 1. Redimensiona para 1024x768
@@ -1194,9 +1194,9 @@ class SegmentacaoParametrizacaoIndicadora:
             imagem_gray = self._melhorar_contraste(imagem_gray)
             
             # 4. PROCESSAMENTO SEPARADO - LINHAS
-            print("\n" + "=" * 40)
+            print("\n" + "=" * 40 + "")
             print("ETAPA 1: SEGMENTAÇÃO POR LINHAS")
-            print("=" * 40)
+            print("" + "=" * 40 + "")
             mascara_linhas, parametros_linhas, metricas_linhas = self._aplicar_parametrizacao_linhas(imagem_gray)
             mascara_linhas_final = self._pos_processar(mascara_linhas)
             
@@ -1209,9 +1209,9 @@ class SegmentacaoParametrizacaoIndicadora:
             print(f"- Pixels segmentados: {pixels_linhas}")
             
             # 5. PROCESSAMENTO SEPARADO - COLUNAS
-            print("\n" + "=" * 40)
+            print("\n" + "=" * 40 + "")
             print("ETAPA 2: SEGMENTAÇÃO POR COLUNAS")
-            print("=" * 40)
+            print("" + "=" * 40 + "")
             mascara_colunas, parametros_colunas, metricas_colunas = self._aplicar_parametrizacao_colunas(imagem_gray)
             mascara_colunas_final = self._pos_processar(mascara_colunas)
             
@@ -1224,9 +1224,9 @@ class SegmentacaoParametrizacaoIndicadora:
             print(f"- Pixels segmentados: {pixels_colunas}")
             
             # 6. UNIÃO DOS RESULTADOS
-            print("\n" + "=" * 40)
+            print("\n" + "=" * 40 + "")
             print("ETAPA 3: UNIÃO DOS RESULTADOS")
-            print("=" * 40)
+            print("" + "=" * 40 + "")
             mascara_uniao = self._combinar_mascaras_linhas_colunas(
                 mascara_linhas_final, 
                 mascara_colunas_final, 
@@ -1234,8 +1234,20 @@ class SegmentacaoParametrizacaoIndicadora:
             )
             mascara_uniao_final = self._pos_processar(mascara_uniao)
             
+            # 7. INTERSECÇÃO DOS RESULTADOS
+            print("\n" + "=" * 40 + "")
+            print("ETAPA 4: INTERSECÇÃO DOS RESULTADOS")
+            print("" + "=" * 40 + "")
+            mascara_intersecao = self._combinar_mascaras_linhas_colunas(
+                mascara_linhas_final, 
+                mascara_colunas_final, 
+                metodo='intersecao'
+            )
+            mascara_intersecao_final = self._pos_processar(mascara_intersecao)
+            
             # Métricas da união
             pixels_uniao = np.sum(mascara_uniao_final > 0)
+            pixels_intersecao = np.sum(mascara_intersecao_final > 0)
             mse_global_combinado = (mse_global_linhas + mse_global_colunas) / 2
             
             print(f"RESULTADO UNIÃO:")
@@ -1244,22 +1256,38 @@ class SegmentacaoParametrizacaoIndicadora:
             print(f"- Pixels da união: {pixels_uniao}")
             print(f"- MSE global combinado: {mse_global_combinado:.2f}")
             
-            # 7. ESTATÍSTICAS COMPARATIVAS
-            print("\n" + "=" * 50)
-            print("RESUMO COMPARATIVO")
-            print("=" * 50)
-            print(f"1. LINHAS:   {pixels_linhas:6d} pixels | MSE: {mse_global_linhas:6.2f}")
-            print(f"2. COLUNAS:  {pixels_colunas:6d} pixels | MSE: {mse_global_colunas:6.2f}")
-            print(f"3. UNIÃO:    {pixels_uniao:6d} pixels | MSE: {mse_global_combinado:6.2f}")
+            print(f"RESULTADO INTERSECÇÃO:")
+            print(f"- Pixels da intersecção: {pixels_intersecao}")
+            
+            # 8. ESTATÍSTICAS COMPARATIVAS
+            print("\n" + "=" * 50 + "")
+            print("RESUMO COMPARATIVO - 4 RESULTADOS DAS SILHUETAS")
+            print("" + "=" * 50 + "")
+            print(f"1. SOMENTE LINHAS:   {pixels_linhas:6d} pixels | MSE: {mse_global_linhas:6.2f}")
+            print(f"2. SOMENTE COLUNAS:  {pixels_colunas:6d} pixels | MSE: {mse_global_colunas:6.2f}")
+            print(f"3. UNIÃO (L ∪ C):    {pixels_uniao:6d} pixels | MSE: {mse_global_combinado:6.2f}")
+            print(f"4. INTERSECÇÃO (L ∩ C): {pixels_intersecao:4d} pixels")
             
             # Calcula percentuais de sobreposição
-            pixels_intersecao = np.sum(np.logical_and(mascara_linhas_final > 0, mascara_colunas_final > 0))
             if pixels_uniao > 0:
-                percentual_sobreposicao = (pixels_intersecao / pixels_uniao) * 100
+                percentual_intersecao_uniao = (pixels_intersecao / pixels_uniao) * 100
             else:
-                percentual_sobreposicao = 0
+                percentual_intersecao_uniao = 0
                 
-            print(f"4. INTERSEÇÃO: {pixels_intersecao:4d} pixels ({percentual_sobreposicao:.1f}% da união)")
+            if pixels_linhas > 0:
+                percentual_intersecao_linhas = (pixels_intersecao / pixels_linhas) * 100
+            else:
+                percentual_intersecao_linhas = 0
+                
+            if pixels_colunas > 0:
+                percentual_intersecao_colunas = (pixels_intersecao / pixels_colunas) * 100
+            else:
+                percentual_intersecao_colunas = 0
+                
+            print(f"\nAnálise de Sobreposição:")
+            print(f"- Intersecção vs União: {percentual_intersecao_uniao:.1f}%")
+            print(f"- Intersecção vs Linhas: {percentual_intersecao_linhas:.1f}%")
+            print(f"- Intersecção vs Colunas: {percentual_intersecao_colunas:.1f}%")
             
             return {
                 'imagem_original': imagem,
@@ -1275,6 +1303,11 @@ class SegmentacaoParametrizacaoIndicadora:
                 # Resultado união
                 'mascara_uniao_bruta': mascara_uniao,
                 'mascara_uniao_final': mascara_uniao_final,
+                
+                # Resultado intersecção
+                'mascara_intersecao_bruta': mascara_intersecao,
+                'mascara_intersecao_final': mascara_intersecao_final,
+                
                 'mascara_binaria': mascara_uniao_final,  # Para compatibilidade
                 
                 # Parâmetros e métricas
@@ -1293,7 +1326,9 @@ class SegmentacaoParametrizacaoIndicadora:
                 'pixels_colunas': pixels_colunas,
                 'pixels_uniao': pixels_uniao,
                 'pixels_intersecao': pixels_intersecao,
-                'percentual_sobreposicao': percentual_sobreposicao,
+                'percentual_intersecao_uniao': percentual_intersecao_uniao,
+                'percentual_intersecao_linhas': percentual_intersecao_linhas,
+                'percentual_intersecao_colunas': percentual_intersecao_colunas,
                 
                 # Metadata
                 'metodo_combinacao': 'separado_e_uniao',
