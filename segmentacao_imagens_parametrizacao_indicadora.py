@@ -124,13 +124,8 @@ class SegmentacaoParametrizacaoIndicadora:
         Returns:
             array: Função indicadora para esta linha (valores 0-255)
         """
-        # OTIMIZAÇÃO SUGERIDA #3: Reduzir validações desnecessárias
         # Cálculo único da metade
         metade = largura // 2  # 256 para largura 512
-        
-        # OTIMIZAÇÃO SUGERIDA #4: Simplificar validações (menos operações)
-        # pixel_inicio = max(5, min(largura - 20, pixel_inicio))  # Validação mais simples
-        # pixel_fim = max(pixel_inicio + 10, min(largura - 5, pixel_fim))  # Garantia mínima
         
         # Validação única dos parâmetros com ranges otimizados
         pixel_inicio = max(5, min(metade + 50, pixel_inicio))  # 5 a 306
@@ -152,10 +147,6 @@ class SegmentacaoParametrizacaoIndicadora:
         
         # Região central: valor_maximo
         funcao[pixel_inicio:pixel_fim+1] = valor_maximo
-        
-        # OTIMIZAÇÃO SUGERIDA #6: Reduzir ou eliminar suavização para velocidade
-        # tamanho_transicao = min(2, (pixel_fim - pixel_inicio) // 8)  # Reduzir de 5 para 2
-        # if tamanho_transicao == 0: return funcao  # Pular suavização se muito pequena
         
         # Suavização nas transições (qualidade original)
         tamanho_transicao = min(5, (pixel_fim - pixel_inicio) // 4)
@@ -292,10 +283,6 @@ class SegmentacaoParametrizacaoIndicadora:
         - Evita loops Python internos sempre que possível
         - Calcula MSE para múltiplas funções indicadoras de uma vez
         
-        OTIMIZAÇÃO SUGERIDA #9: Early stopping mais agressivo
-        - MSE < 50: parâmetros muito bons, pode parar
-        - MSE < 100: parâmetros bons após 30% das iterações
-        
         Otimiza os parâmetros da função indicadora para uma linha específica.
         Busca otimizada com parâmetros ajustados para velocidade.
         Usa apenas MSE como métrica de avaliação.
@@ -312,61 +299,51 @@ class SegmentacaoParametrizacaoIndicadora:
         Returns:
             dict: Melhores parâmetros encontrados
         """
+        # 2 10000 800 150 
+        # 1 100000 500 150 lento mas consegue resultados melhores
+        # 2 100000 500 150 mais rapido mas consegue fazer ok
+        # 2 100000 500 140 ok
+        # 1 100000 600 140 0.16 muito bom
 
-        parametro_step = 2
-        parametro_max_tentativas = 100000  # Limite de tentativas para busca
-        parametro_batch_size = 500  # Processar 500 combinações por vez
+        parametro_step = 10
+        parametro_max_tentativas = 10000  # Limite de tentativas para busca
+        parametro_batch_size = 600  # Processar 600 combinações por vez
+        parametro_valor_maximo_fixo = 60
+
+        parametro_regiao_ajuste = 0.16
 
 
         melhor_score = float('inf')  # Para MSE, menor é melhor
         melhores_params = {
             'pixel_inicio': 100,
             'pixel_fim': 380,
-            'valor_maximo': 180,
+            'valor_maximo': parametro_valor_maximo_fixo,
             'mse': float('inf')
         }
         
         largura = len(linha_pixels)
-        
-        # OTIMIZAÇÃO SUGERIDA #10: Análise prévia para guiar busca
-        # intensidade_media = np.mean(linha_pixels)
-        # contraste = np.max(linha_pixels) - np.min(linha_pixels)
-        # if contraste < 30: return params_default  # Linha sem contraste, usar padrão
         
         # Busca otimizada para velocidade (menos densa, mais rápida):
         # pixel_inicio: entre 5 e metade+50
         # pixel_fim: entre metade-50 e fim-5
         # SEMPRE garantindo pixel_inicio < pixel_fim
         # valor_maximo: baseado na intensidade da linha com busca simplificada
-        
-        '''
-        # OTIMIZAÇÃO: Análise vectorizada da linha (mais rápida)
-        intensidade_stats = np.array([
-            np.mean(linha_pixels), np.max(linha_pixels), np.min(linha_pixels)
-        ])
-        intensidade_media, intensidade_max, intensidade_min = intensidade_stats
-        '''
+
 
         # Novos ranges conforme especificação:
         # pixel_inicio (a): mínimo 5, máximo maior que metade (256+)
         # pixel_fim (b): um pouco menor que metade até fim-5
+
+        parametro = parametro_regiao_ajuste # 0.2 para 20% da largura
         metade = largura // 2  # 256 para largura 512
         
-        # OTIMIZAÇÃO SUGERIDA #11: Reduzir steps para menos iterações
-        # IMPLEMENTADO: Step parametro_step para maior precisão (conforme solicitado)
-        inicio_range = range(10, metade + 100, parametro_step)  # Step parametro_step para maior precisão
+        inicio_range = range(round(largura*parametro), round(metade*(1+parametro)), parametro_step)  # Step parametro_step para maior precisão
 
-        # OTIMIZAÇÃO SUGERIDA #12: Simplificar seleção de valor_range
-        # IMPLEMENTADO: Usar intensidade_max diretamente (sem varredura)
         # Definir valor_maximo como intensidade_max da linha
-
-        valor_maximo_fixo = 150  # Ajuste para evitar saturação
+        valor_maximo_fixo = parametro_valor_maximo_fixo  # Ajuste para evitar saturação
         
         # Não fazer varredura sobre valor_maximo - usar valor fixo baseado na intensidade da linha
         
-        # OTIMIZAÇÃO SUGERIDA #13: Controle de tentativas adaptativo
-        # max_tentativas = min(50, len(inicio_range) * 2)  # Reduzir para linhas simples
-        # REVERTIDO: Busca com tentativas originais para manter qualidade
         tentativas = 0
         max_tentativas = parametro_max_tentativas  # Mantém 10000 para melhor qualidade
 
@@ -382,18 +359,15 @@ class SegmentacaoParametrizacaoIndicadora:
         for pixel_inicio in inicio_range:
             # Range para pixel_fim: um pouco menor que metade até fim-5
             # Garantindo sempre que pixel_fim > pixel_inicio
-            fim_min = max(pixel_inicio + 10, metade - 50)  # Garante pixel_fim > pixel_inicio
-            fim_max = largura - 5  # Até 507
+            fim_min = max(pixel_inicio + 10, round(metade * (1 - parametro)))  # Garante pixel_fim > pixel_inicio com margem
+            fim_max = round(largura * (1 - parametro))  # Até 410 (para largura 512)
             
             if fim_min < fim_max:  # Só processa se há range válido
-                # IMPLEMENTADO: Step parametro_step para maior precisão (conforme solicitado)
+                # CORRIGIDO: Usar round() para consistência e arredondamento simétrico
                 fim_range = range(fim_min, fim_max, parametro_step)  # Step parametro_step para maior precisão
 
                 for pixel_fim in fim_range:
-                    # Validação adicional: garante pixel_inicio < pixel_fim
-                    if pixel_inicio >= pixel_fim:
-                        continue
-                    
+                    # A validação pixel_inicio < pixel_fim já é garantida pelos ranges corretos
                     combinacoes_validas.append((pixel_inicio, pixel_fim))
                     
                     if len(combinacoes_validas) >= max_tentativas:
@@ -415,114 +389,43 @@ class SegmentacaoParametrizacaoIndicadora:
             inicios_batch = np.array([combo[0] for combo in batch])
             fins_batch = np.array([combo[1] for combo in batch])
             
-            try:
-                # Gerar múltiplas funções de uma vez
-                funcoes_batch = self._gerar_multiplas_funcoes_vectorizadas(
-                    largura, inicios_batch, fins_batch, valor_maximo_fixo
-                )
-                
-                # Calcular MSE para todas as funções simultaneamente
-                mse_valores = self._calcular_mse_vectorizado(linha_pixels, funcoes_batch)
+            # Gerar múltiplas funções de uma vez
+            funcoes_batch = self._gerar_multiplas_funcoes_vectorizadas(
+                largura, inicios_batch, fins_batch, valor_maximo_fixo
+            )
+            
+            # Calcular MSE para todas as funções simultaneamente
+            mse_valores = self._calcular_mse_vectorizado(linha_pixels, funcoes_batch)
 
-                # Encontrar melhor resultado no lote usando NumPy
-                melhor_idx_lote = np.argmin(mse_valores)
-                melhor_mse_lote = mse_valores[melhor_idx_lote]
+            # Encontrar melhor resultado no lote usando NumPy
+            melhor_idx_lote = np.argmin(mse_valores)
+            melhor_mse_lote = mse_valores[melhor_idx_lote]
+            
+            # Verificar se é o melhor resultado global
+            if melhor_mse_lote < melhor_mse_global:
+                melhor_mse_global = melhor_mse_lote
                 
-                # Verificar se é o melhor resultado global
-                if melhor_mse_lote < melhor_mse_global:
-                    melhor_mse_global = melhor_mse_lote
+                score_mse = melhor_mse_lote / (255.0 * 255.0 )
+                
+                if score_mse < melhor_score:
+                    melhor_score = score_mse
+                    melhores_params = {
+                        'pixel_inicio': int(inicios_batch[melhor_idx_lote]),
+                        'pixel_fim': int(fins_batch[melhor_idx_lote]),
+                        'valor_maximo': valor_maximo_fixo,
+                        'mse': melhor_mse_lote,
+                        'score': score_mse
+                    }
                     
-                    score_mse = melhor_mse_lote / (255.0 ** 2)
-                    
-                    if score_mse < melhor_score:
-                        melhor_score = score_mse
-                        melhores_params = {
-                            'pixel_inicio': int(inicios_batch[melhor_idx_lote]),
-                            'pixel_fim': int(fins_batch[melhor_idx_lote]),
-                            'valor_maximo': valor_maximo_fixo,
-                            'mse': melhor_mse_lote,
-                            'score': score_mse
-                        }
-                        
-                        # OTIMIZAÇÃO: Early stopping
-                        if melhor_mse_lote < 200:  # MSE moderado - stopping original
-                            return melhores_params
-                            
-            except Exception as e:
-                # Se houver erro no lote, continua para o próximo
-                continue
+                    # OTIMIZAÇÃO: Early stopping
+                    if melhor_mse_lote < 200:  # MSE moderado - stopping original
+                        return melhores_params
                 
             tentativas += len(batch)
             
             # Controle de tentativas máximas
             if tentativas >= max_tentativas:
                 break
-        
-        if melhor_score == float('inf') or melhores_params['mse'] > 400:  # Critério original
-            
-            # OTIMIZAÇÃO #8: Busca de fallback também vectorizada
-            inicio_range_refinado = range(5, metade + 100, parametro_step)  # Range original
-            
-            # Gerar combinações para fallback
-            combinacoes_fallback = []
-            for pixel_inicio in inicio_range_refinado:
-                fim_min = max(pixel_inicio + 10, metade - 50)
-                fim_max = largura - 5
-                
-                if fim_min < fim_max:
-                    fim_range_refinado = range(fim_min, fim_max, parametro_step)  # Step original
-                    
-                    for pixel_fim in fim_range_refinado:
-                        if pixel_inicio >= pixel_fim:
-                            continue
-                        combinacoes_fallback.append((pixel_inicio, pixel_fim))
-                        
-                        # Limitar tentativas no fallback
-                        if len(combinacoes_fallback) >= 200:
-                            break
-                if len(combinacoes_fallback) >= 200:
-                    break
-            
-            # Processar fallback em lotes menores (mais conservador)
-            batch_size_fallback = 25
-            
-            for i in range(0, len(combinacoes_fallback), batch_size_fallback):
-                batch = combinacoes_fallback[i:i+batch_size_fallback]
-                
-                if not batch:
-                    break
-                    
-                inicios_batch = np.array([combo[0] for combo in batch])
-                fins_batch = np.array([combo[1] for combo in batch])
-                
-                try:
-                    # Usar valor_maximo fixo baseado na intensidade
-                    funcoes_batch = self._gerar_multiplas_funcoes_vectorizadas(
-                        largura, inicios_batch, fins_batch, valor_maximo_fixo
-                    )
-                    
-                    # Calcular MSE para todas as funções
-                    mse_valores = self._calcular_mse_vectorizado(linha_pixels, funcoes_batch)
-                    
-                    # Encontrar melhor no lote
-                    melhor_idx_lote = np.argmin(mse_valores)
-                    melhor_mse_lote = mse_valores[melhor_idx_lote]
-                    
-                    if melhor_mse_lote < melhores_params['mse']:
-                        melhores_params = {
-                            'pixel_inicio': int(inicios_batch[melhor_idx_lote]),
-                            'pixel_fim': int(fins_batch[melhor_idx_lote]),
-                            'valor_maximo': valor_maximo_fixo,
-                            'mse': melhor_mse_lote,
-                            'score': melhor_mse_lote / (255.0 ** 2)
-                        }
-                        
-                        # Early stopping no fallback também
-                        if melhor_mse_lote < 300:
-                            break
-                            
-                except Exception as e:
-                    continue
         
         return melhores_params
     
@@ -680,19 +583,6 @@ class SegmentacaoParametrizacaoIndicadora:
     
     def segmentar(self, imagem_path):
         """
-        OTIMIZAÇÃO SUGERIDA #20: Paralelização do processamento de linhas
-        - Usar ThreadPoolExecutor para processar múltiplas linhas em paralelo
-        - from concurrent.futures import ThreadPoolExecutor
-        - with ThreadPoolExecutor(max_workers=4) as executor:
-        
-        OTIMIZAÇÃO SUGERIDA #21: Cache inteligente de funções indicadoras
-        - Manter cache das melhores funções para parâmetros similares
-        - Evitar recálculo quando diferenças de pixels são pequenas
-        
-        OTIMIZAÇÃO SUGERIDA #22: Processamento adaptativo
-        - Pular linhas com baixo contraste (usar função indicadora padrão)
-        - Focar otimização apenas em linhas com features importantes
-        
         Realiza a segmentação da imagem usando 382 funções indicadoras.
         
         Args:
@@ -713,11 +603,6 @@ class SegmentacaoParametrizacaoIndicadora:
             
             print("Iniciando segmentação com 382 funções indicadoras...")
             print(f"Imagem original: {imagem.shape}")
-            
-            # OTIMIZAÇÃO SUGERIDA #23: Análise prévia da imagem
-            # contraste_geral = np.std(imagem)  # Análise de contraste
-            # if contraste_geral < 20:  # Imagem de baixo contraste
-            #     return self._segmentacao_rapida_baixo_contraste(imagem)
             
             # 1. Redimensiona para 512x382
             imagem_redimensionada = self._redimensionar_imagem(imagem)
@@ -858,114 +743,3 @@ class SegmentacaoParametrizacaoIndicadora:
         if target_height is not None:
             self.target_height = target_height
             print(f"Altura alvo atualizada para: {self.target_height}")
-
-
-def exemplo_uso():
-    """
-    Exemplo de uso da classe com OTIMIZAÇÕES EXTREMAS v0.2.3:
-    - Imagem redimensionada para 512x382
-    - 382 funções indicadoras (uma para cada linha)  
-    - Cada função: 0 -> valor_max -> 0
-    - VECTORIZAÇÃO NUMPY: 3-5x mais rápido
-    - EARLY STOPPING: MSE < 200 para parada inteligente
-    - PROCESSAMENTO EM BATCHES: 50 funções simultâneas
-    """
-    print("=== SEGMENTAÇÃO COM 382 FUNÇÕES INDICADORAS v0.2.3 (EXTREMAMENTE OTIMIZADA) ===")
-    print("🚀 OTIMIZAÇÕES REVOLUCIONÁRIAS:")
-    print("- ⚡ Vectorização NumPy: 3-5x mais rápido")
-    print("- 🧠 Processamento em batches: 50 funções simultâneas")
-    print("- 🎯 Early stopping: MSE < 200 para parada inteligente")
-    print("- 📊 MSE normalizado para comparação justa")
-    print("- 🔬 Operações matriciais eliminam loops Python")
-    print()
-    print("📋 Implementação Técnica:")
-    print("- Redimensiona imagem para 512x382 pixels")
-    print("- Cria 382 funções indicadoras (uma para cada linha)")
-    print("- Cada função: começa em 0 (preto), sobe para valor máximo, volta a 0")
-    print("- Tempo de processamento: ~1-2s por imagem (antes: ~3s)")
-    print("- Ranges flexíveis: pixel_inicio (5 a metade+50), pixel_fim (metade-50 a fim-5)")
-    print("- Restrição: sempre pixel_inicio < pixel_fim")
-    print("- Métricas rigorosas: MSE normalizado para máxima precisão")
-    print()("- Threshold adaptativo simplificado")
-    print()
-    
-    # Inicializa o segmentador
-    segmentador = SegmentacaoParametrizacaoIndicadora(
-        target_width=512,        # Largura fixa
-        target_height=382,       # Altura fixa = número de funções indicadoras
-        morph_kernel_size=3,     # Suavização mínima
-        min_area=50             # Remove ruídos pequenos
-    )
-    
-    # Segmenta uma imagem (substitua pelo caminho real)
-    caminho_imagem = "caminho/para/sua/imagem.jpg"
-    print(f"Processando imagem: {caminho_imagem}")
-    
-    resultado = segmentador.segmentar(caminho_imagem)
-    
-    # Visualiza resultados
-    if resultado['sucesso']:
-        segmentador.visualizar_resultados(resultado)
-        
-        # Mostra estatísticas detalhadas com MSE
-        print("\n=== ANÁLISE DAS FUNÇÕES INDICADORAS (RIGOROSA) ===")
-        parametros = resultado['parametros_linhas']
-        
-        # Estatísticas dos parâmetros otimizados
-        pixel_inicios = [p['pixel_inicio'] for p in parametros]
-        pixel_fins = [p['pixel_fim'] for p in parametros]
-        valores_maximos = [p['valor_maximo'] for p in parametros]
-        mses = [p['mse'] for p in parametros]
-        
-        print(f"Parâmetros das funções indicadoras:")
-        print(f"- Pixel início: min={min(pixel_inicios)}, max={max(pixel_inicios)}, média={np.mean(pixel_inicios):.1f}")
-        print(f"- Pixel fim: min={min(pixel_fins)}, max={max(pixel_fins)}, média={np.mean(pixel_fins):.1f}")
-        print(f"- Valor máximo: min={min(valores_maximos):.1f}, max={max(valores_maximos):.1f}, média={np.mean(valores_maximos):.1f}")
-        
-        print(f"\nQualidade do ajuste rigoroso (MSE):")
-        print(f"- MSE: min={min(mses):.1f}, max={max(mses):.1f}, média={np.mean(mses):.1f}")
-        
-        # Conta linhas com diferentes níveis de qualidade MSE
-        excelente = sum(1 for mse in mses if mse < 150)
-        bom = sum(1 for mse in mses if 150 <= mse < 300)
-        regular = sum(1 for mse in mses if 300 <= mse < 500)
-        ruim = sum(1 for mse in mses if mse >= 500)
-        
-        print(f"- Linhas excelentes (MSE < 150): {excelente}/{len(mses)} ({100*excelente/len(mses):.1f}%)")
-        print(f"- Linhas boas (150 ≤ MSE < 300): {bom}/{len(mses)} ({100*bom/len(mses):.1f}%)")
-        print(f"- Linhas regulares (300 ≤ MSE < 500): {regular}/{len(mses)} ({100*regular/len(mses):.1f}%)")
-        print(f"- Linhas ruins (MSE ≥ 500): {ruim}/{len(mses)} ({100*ruim/len(mses):.1f}%)")
-        
-        # Mostra exemplos de algumas linhas
-        print(f"\n=== EXEMPLOS DE LINHAS ===")
-        exemplos = [0, 95, 191, 286, 381]  # Início, 1/4, meio, 3/4, fim
-        for linha_idx in exemplos:
-            if linha_idx < len(parametros):
-                p = parametros[linha_idx]
-                print(f"Linha {linha_idx:3d}: início={p['pixel_inicio']:3d}, fim={p['pixel_fim']:3d}, "
-                      f"max={p['valor_maximo']:5.1f}, MSE={p['mse']:6.1f}")
-        
-        print(f"\n=== RESUMO FINAL (RIGOROSO) ===")
-        print(f"✓ Imagem processada: 512x382 pixels")
-        print(f"✓ Funções indicadoras criadas: {len(parametros)}")
-        print(f"✓ MSE global: {resultado['mse_global']:.2f}")
-        
-        # Classificação rigorosa baseada em MSE
-        if resultado['mse_global'] < 200:
-            qualidade = "EXCELENTE"
-        elif resultado['mse_global'] < 400:
-            qualidade = "BOM"
-        elif resultado['mse_global'] < 600:
-            qualidade = "REGULAR"
-        else:
-            qualidade = "INSATISFATÓRIO"
-            
-        print(f"✓ Qualidade geral: {qualidade}")
-        print(f"✓ Ranges flexíveis: pixel_inicio (5 a metade+50), pixel_fim (metade-50 a fim-5)")
-        print(f"✓ Garantia: sempre pixel_inicio < pixel_fim")
-        print(f"✓ Busca densa com penalizações rigorosas")
-        print(f"✓ Métrica única: MSE (Mean Square Error)")
-
-
-if __name__ == "__main__":
-    exemplo_uso()
