@@ -36,12 +36,12 @@ def exibir_menu_modelos() -> None:
     print("="*60)
 
 
-def obter_escolha_usuario() -> str:
+def obter_escolha_usuario() -> Tuple[str, str]:
     """
     Obtém a escolha do usuário e valida a entrada
     
     Returns:
-        str: 'deeplabv3' ou 'parametrizacao'
+        Tuple[str, str]: (tipo_modelo, metodo_segmentacao)
     """
     while True:
         try:
@@ -50,12 +50,64 @@ def obter_escolha_usuario() -> str:
             
             if escolha == "" or escolha == "2":
                 print("✅ Modelo selecionado: Parametrização com Funções Indicadoras")
-                return "parametrizacao"
+                metodo_segmentacao = obter_metodo_parametrizacao()
+                return "parametrizacao", metodo_segmentacao
             elif escolha == "1":
                 print("✅ Modelo selecionado: DeepLabV3 + ResNet101")
-                return "deeplabv3"
+                return "deeplabv3", "deeplabv3"
             else:
                 print("❌ Opção inválida. Digite 1 ou 2, ou pressione Enter para padrão.")
+                
+        except KeyboardInterrupt:
+            print("\n\n⛔ Operação cancelada pelo usuário.")
+            sys.exit(0)
+        except Exception as e:
+            print(f"❌ Erro inesperado: {e}")
+            print("Tente novamente.")
+
+
+def obter_metodo_parametrizacao() -> str:
+    """
+    Obtém o método específico de parametrização (linhas, colunas ou combinado)
+    
+    Returns:
+        str: 'linhas', 'colunas' ou 'combinado'
+    """
+    while True:
+        try:
+            print("\n" + "="*60)
+            print("🎯 MÉTODO DE PARAMETRIZAÇÃO")
+            print("="*60)
+            print("Escolha o tipo de função indicadora:")
+            print()
+            print("1️⃣  Segmentação por LINHAS (clássico)")
+            print("   • 768 funções indicadoras horizontais")
+            print("   • Método original otimizado")
+            print()
+            print("2️⃣  Segmentação por COLUNAS (novo)")
+            print("   • 1024 funções indicadoras verticais")
+            print("   • Análise perpendicular às linhas")
+            print()
+            print("3️⃣  Segmentação COMBINADA (híbrido)")
+            print("   • Combina linhas E colunas")
+            print("   • Maior precisão e robustez")
+            print("   • Processamento um pouco mais lento")
+            print()
+            print("="*60)
+            
+            escolha = input("Escolha uma opção (1-3) ou Enter para padrão (1): ").strip()
+            
+            if escolha == "" or escolha == "1":
+                print("✅ Método selecionado: Segmentação por LINHAS")
+                return "linhas"
+            elif escolha == "2":
+                print("✅ Método selecionado: Segmentação por COLUNAS")
+                return "colunas"
+            elif escolha == "3":
+                print("✅ Método selecionado: Segmentação COMBINADA")
+                return "combinado"
+            else:
+                print("❌ Opção inválida. Digite 1, 2 ou 3, ou pressione Enter para padrão.")
                 
         except KeyboardInterrupt:
             print("\n\n⛔ Operação cancelada pelo usuário.")
@@ -90,32 +142,44 @@ def criar_modelo_deeplabv3(dataset: pd.DataFrame) -> ModeloSegmentacaoDeepLabV3:
     return modelo
 
 
-def criar_modelo_parametrizacao(dataset: pd.DataFrame) -> ModeloSegmentacaoParametrizacao:
+def criar_modelo_parametrizacao(dataset: pd.DataFrame, metodo_segmentacao: str = "linhas") -> ModeloSegmentacaoParametrizacao:
     """
     Cria e configura o modelo de Parametrização
     
     Args:
         dataset (pd.DataFrame): Dataset com os dados estruturados
+        metodo_segmentacao (str): Método de segmentação ('linhas', 'colunas', 'combinado')
         
     Returns:
         ModeloSegmentacaoParametrizacao: Modelo configurado
     """
     print("🔧 Configurando modelo de Parametrização...")
     
+    # Ajustar dimensões baseado no método escolhido
+    if metodo_segmentacao == "colunas" or metodo_segmentacao == "combinado":
+        # Para colunas, usar dimensões maiores para melhor precisão
+        target_width = 1024
+        target_height = 768
+    else:
+        # Para linhas (método original)
+        target_width = 512
+        target_height = 382
+    
     modelo = ModeloSegmentacaoParametrizacao(
         dataset,
-        target_width=512,
-        target_height=382,
+        target_width=target_width,
+        target_height=target_height,
         morph_kernel_size=5,
         min_area=100,
-        enhance_contrast=True
+        enhance_contrast=True,
+        metodo_segmentacao=metodo_segmentacao  # Adicionar o método
     )
     
-    print("✅ Modelo Parametrização especializado inicializado.")
+    print(f"✅ Modelo Parametrização especializado inicializado ({metodo_segmentacao}).")
     return modelo
 
 
-def inicializar_modelo(dataset: pd.DataFrame) -> Tuple[Union[ModeloSegmentacaoDeepLabV3, ModeloSegmentacaoParametrizacao], str]:
+def inicializar_modelo(dataset: pd.DataFrame) -> Tuple[Union[ModeloSegmentacaoDeepLabV3, ModeloSegmentacaoParametrizacao], str, str]:
     """
     Função principal que coordena a escolha e inicialização do modelo
     
@@ -123,12 +187,12 @@ def inicializar_modelo(dataset: pd.DataFrame) -> Tuple[Union[ModeloSegmentacaoDe
         dataset (pd.DataFrame): Dataset com os dados estruturados
         
     Returns:
-        Tuple: (modelo_inicializado, tipo_modelo)
+        Tuple: (modelo_inicializado, tipo_modelo, metodo_segmentacao)
     """
     print("\n🚀 Iniciando seleção de modelo de segmentação...")
     
     # Obter escolha do usuário
-    tipo_modelo = obter_escolha_usuario()
+    tipo_modelo, metodo_segmentacao = obter_escolha_usuario()
     
     print(f"\n🔄 Inicializando modelo de segmentação ({tipo_modelo})...")
     
@@ -136,11 +200,11 @@ def inicializar_modelo(dataset: pd.DataFrame) -> Tuple[Union[ModeloSegmentacaoDe
     if tipo_modelo == 'deeplabv3':
         modelo = criar_modelo_deeplabv3(dataset)
     elif tipo_modelo == 'parametrizacao':
-        modelo = criar_modelo_parametrizacao(dataset)
+        modelo = criar_modelo_parametrizacao(dataset, metodo_segmentacao)
     else:
         raise ValueError(f"Tipo de modelo não reconhecido: {tipo_modelo}")
     
-    return modelo, tipo_modelo
+    return modelo, tipo_modelo, metodo_segmentacao
 
 
 def processar_com_modelo(modelo: Union[ModeloSegmentacaoDeepLabV3, ModeloSegmentacaoParametrizacao], 
@@ -187,13 +251,14 @@ def processar_com_modelo(modelo: Union[ModeloSegmentacaoDeepLabV3, ModeloSegment
     return resultado_geral
 
 
-def exibir_resultados(resultado_geral: dict, tipo_modelo: str) -> None:
+def exibir_resultados(resultado_geral: dict, tipo_modelo: str, metodo_segmentacao: str = None) -> None:
     """
     Exibe as estatísticas do resultado do processamento
     
     Args:
         resultado_geral (dict): Resultado do processamento
         tipo_modelo (str): Tipo do modelo utilizado
+        metodo_segmentacao (str): Método de segmentação usado (se aplicável)
     """
     if not resultado_geral:
         print("❌ Nenhum resultado para exibir.")
@@ -202,7 +267,11 @@ def exibir_resultados(resultado_geral: dict, tipo_modelo: str) -> None:
     print(f"\n" + "="*50)
     print("📊 RESULTADOS DO PROCESSAMENTO")
     print("="*50)
-    print(f"🎯 Modelo utilizado: {tipo_modelo.upper()}")
+    
+    if metodo_segmentacao and tipo_modelo == 'parametrizacao':
+        print(f"🎯 Modelo utilizado: {tipo_modelo.upper()} ({metodo_segmentacao.upper()})")
+    else:
+        print(f"🎯 Modelo utilizado: {tipo_modelo.upper()}")
     
     # Extrair estatísticas baseado no modelo utilizado
     if tipo_modelo == 'parametrizacao':
@@ -217,9 +286,18 @@ def exibir_resultados(resultado_geral: dict, tipo_modelo: str) -> None:
         print(f"✅ Taxa de sucesso: {stats['taxa_sucesso_imagens']:.1f}%")
         
         # Exibir métricas específicas do modelo de parametrização
-        if tipo_modelo == 'parametrizacao' and 'mse_global' in stats:
-            print(f"📈 MSE Global: {stats['mse_global']:.3f}")
-            print(f"📈 RMS Global: {stats['rms_global']:.3f}")
+        if tipo_modelo == 'parametrizacao':
+            if 'mse_global' in stats:
+                print(f"📈 MSE Global: {stats['mse_global']:.3f}")
+            if 'rms_global' in stats:
+                print(f"📈 RMS Global: {stats['rms_global']:.3f}")
+            if metodo_segmentacao:
+                if metodo_segmentacao == "linhas":
+                    print(f"📏 Funções indicadoras horizontais processadas")
+                elif metodo_segmentacao == "colunas":
+                    print(f"📐 Funções indicadoras verticais processadas")
+                elif metodo_segmentacao == "combinado":
+                    print(f"🔄 Funções indicadoras híbridas (linhas + colunas)")
             print(f"⏱️ Tempo total: {stats.get('tempo_total', 0):.1f}s")
     else:
         print("⚠️ Estatísticas não disponíveis")

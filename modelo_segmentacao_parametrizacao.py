@@ -39,7 +39,8 @@ class ModeloSegmentacaoParametrizacao:
                  morph_kernel_size: int = 5,
                  min_area: int = 10,
                  enhance_contrast: bool = True,
-                 num_workers: int = 1):
+                 num_workers: int = 1,
+                 metodo_segmentacao: str = "linhas"):
         """
         Inicializa o modelo de segmentação por parametrização
         
@@ -51,6 +52,7 @@ class ModeloSegmentacaoParametrizacao:
             min_area (int): Área mínima para filtrar ruídos (pixels)
             enhance_contrast (bool): Se deve aplicar melhoria de contraste
             num_workers (int): Número de workers para processamento paralelo (futuro)
+            metodo_segmentacao (str): Método de segmentação ('linhas', 'colunas', 'combinado')
         """
         self.dataframe = dataframe.copy()
         self.target_width = target_width
@@ -59,6 +61,7 @@ class ModeloSegmentacaoParametrizacao:
         self.min_area = min_area
         self.enhance_contrast = enhance_contrast
         self.num_workers = num_workers
+        self.metodo_segmentacao = metodo_segmentacao
         
         # Definir caminhos base
         self.project_root = Path(__file__).parent.parent
@@ -81,7 +84,13 @@ class ModeloSegmentacaoParametrizacao:
         logger.info(f"Modelo de Parametrização inicializado:")
         logger.info(f"  • {len(self.dataframe)} registros para processar")
         logger.info(f"  • Dimensões alvo: {self.target_width}x{self.target_height}")
-        logger.info(f"  • {self.target_height} funções indicadoras")
+        logger.info(f"  • Método: {self.metodo_segmentacao.upper()}")
+        if self.metodo_segmentacao == "linhas":
+            logger.info(f"  • {self.target_height} funções indicadoras horizontais")
+        elif self.metodo_segmentacao == "colunas":
+            logger.info(f"  • {self.target_width} funções indicadoras verticais")
+        else:  # combinado
+            logger.info(f"  • {self.target_height} funções horizontais + {self.target_width} verticais")
         logger.info(f"  • Kernel morfológico: {self.morph_kernel_size}x{self.morph_kernel_size}")
         logger.info(f"  • Contraste aprimorado: {'✓' if self.enhance_contrast else '✗'}")
     
@@ -174,8 +183,15 @@ class ModeloSegmentacaoParametrizacao:
         try:
             logger.debug(f"Processando {tipo_imagem} para {variavel}: {caminho_imagem}")
             
-            # Processar com Parametrização Indicadora
-            resultado_segmentacao = self.segmentador.segmentar(str(caminho_imagem))
+            # Processar com Parametrização Indicadora baseado no método escolhido
+            if self.metodo_segmentacao == "linhas":
+                resultado_segmentacao = self.segmentador.segmentar(str(caminho_imagem))
+            elif self.metodo_segmentacao == "colunas":
+                resultado_segmentacao = self.segmentador.segmentar_por_colunas(str(caminho_imagem))
+            elif self.metodo_segmentacao == "combinado":
+                resultado_segmentacao = self.segmentador.segmentar_combinado(str(caminho_imagem), metodo_combinacao='intersecao')
+            else:
+                raise ValueError(f"Método de segmentação inválido: {self.metodo_segmentacao}")
             
             tempo_processamento = time.time() - inicio_tempo
             

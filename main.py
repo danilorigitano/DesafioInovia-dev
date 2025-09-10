@@ -116,7 +116,7 @@ def main():
     dataset = selecionar_dataset(data_frame_valido, 0)
     
     # Inicializar modelo baseado na escolha do usuário
-    modelo_seg, tipo_modelo = inicializar_modelo(dataset)
+    modelo_seg, tipo_modelo, metodo_segmentacao = inicializar_modelo(dataset)
     
     # Processar dataset com o modelo escolhido
     resultado_geral = processar_com_modelo(
@@ -126,7 +126,7 @@ def main():
     )
     
     # Exibir resultados
-    exibir_resultados(resultado_geral, tipo_modelo)
+    exibir_resultados(resultado_geral, tipo_modelo, metodo_segmentacao)
     
     # Salvar resultados se processamento foi bem-sucedido
     if resultado_geral:
