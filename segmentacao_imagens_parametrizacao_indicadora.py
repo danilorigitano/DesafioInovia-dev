@@ -1,5 +1,8 @@
 """
 Segmentação de imagens usando parametrização com funções indicadoras - v0.4.0 MÓDULO PRINCIPAL
+RESPONSABILIDADE: Processamento e segmentação de imagens (SEM visualização)
+==================================================================================
+
 - Redimensiona imagem para 1024x768 pixels
 - NOVIDADE v0.4.0: Implementa segmentação separada e união conforme solicitado
 - Cria 768 funções indicadoras para LINHAS + 1024 para COLUNAS
@@ -10,11 +13,21 @@ Segmentação de imagens usando parametrização com funções indicadoras - v0.
 - Processamento 3-5x mais rápido com operações matriciais NumPy
 - Early stopping inteligente: MSE < 200 para parada automática
 
-SEPARAÇÃO DE MÓDULOS v0.4.0:
-=============================
-- segmentacao_imagens_parametrizacao_indicadora.py: ESTE MÓDULO - Processamento e segmentação
-- exibicao_imagens_parametrizadas.py: Visualização e análise gráfica
-- exemplo_separado_e_uniao.py: Demonstração da nova funcionalidade
+SEPARAÇÃO DE RESPONSABILIDADES v0.4.0:
+======================================
+🔹 ESTE MÓDULO (segmentacao_imagens_parametrizacao_indicadora.py):
+   - Processamento e segmentação de imagens
+   - Algoritmos de parametrização com funções indicadoras
+   - Cálculos de MSE e otimização de parâmetros
+   - Geração de máscaras binárias
+   - Métodos de combinação (união, intersecção)
+
+🔹 MÓDULO DE VISUALIZAÇÃO (exibicao_imagens_parametrizadas.py):
+   - Visualização e análise gráfica dos resultados
+   - Exibição de imagens originais, processadas e máscaras
+   - Gráficos de métricas e estatísticas
+   - Comparação visual dos diferentes métodos
+   - Interface para matplotlib
 
 MÉTODOS DISPONÍVEIS v0.4.0:
 ============================
@@ -29,12 +42,28 @@ FUNCIONALIDADE IMPLEMENTADA:
 deve ser dado separado e depois o dois juntos (união) e não intersecção"
 
 ✓ Processamento separado de linhas e colunas
-✓ Visualização individual dos resultados  
+✓ Geração individual dos resultados  
 ✓ União dos resultados (não intersecção)
 ✓ Estatísticas detalhadas e comparativas
-✓ Visualização completa e interativa
 
-NOTA: Para visualização, use o módulo exibicao_imagens_parametrizadas.py
+NOTA IMPORTANTE:
+===============
+🎨 Para VISUALIZAÇÃO dos resultados, use o módulo: exibicao_imagens_parametrizadas.py
+Este módulo foca APENAS no processamento, conforme separação de responsabilidades solicitada.
+
+EXEMPLO DE USO COMPLETO:
+========================
+```python
+# 1. Processar imagem (ESTE módulo)
+from segmentacao_imagens_parametrizacao_indicadora import SegmentacaoParametrizacaoIndicadora
+segmentador = SegmentacaoParametrizacaoIndicadora()
+resultado = segmentador.segmentar_separado_e_unido('imagem.jpg')
+
+# 2. Visualizar resultado (módulo separado)
+from exibicao_imagens_parametrizadas import ExibicaoImagensParametrizadas
+visualizador = ExibicaoImagensParametrizadas()
+visualizador.visualizar_resultado_individual(resultado, 'Minha Imagem')
+```
 """
 
 import numpy as np
@@ -48,14 +77,19 @@ class SegmentacaoParametrizacaoIndicadora:
     """
     Segmentação com funções indicadoras - Versão Estendida v0.4.0 - MÓDULO PRINCIPAL
     
-    RESPONSABILIDADE: Processamento e segmentação de imagens
-    MÓDULO COMPLEMENTAR: exibicao_imagens_parametrizadas.py (visualização)
+    RESPONSABILIDADE: Processamento e segmentação de imagens (SEM visualização)
+    MÓDULO COMPLEMENTAR: exibicao_imagens_parametrizadas.py (visualização separada)
+    
+    SEPARAÇÃO DE RESPONSABILIDADES:
+    ==============================
+    🔹 ESTE MÓDULO: Algoritmos de segmentação, cálculos MSE, geração de máscaras
+    🔹 MÓDULO VISUALIZAÇÃO: Gráficos, exibição, análise visual dos resultados
     
     FUNCIONALIDADE IMPLEMENTADA v0.4.0:
     ====================================
     ✓ Segmentação separada por linhas e colunas conforme solicitado
     ✓ União dos resultados (não intersecção) 
-    ✓ Visualização individual e combinada
+    ✓ Geração de dados para visualização
     ✓ Estatísticas detalhadas e comparativas
     
     EXTENSÕES IMPLEMENTADAS v0.4.0:
@@ -84,7 +118,8 @@ class SegmentacaoParametrizacaoIndicadora:
     - segmentar_combinado(): Segmentação híbrida (intersecção ou união)
     - segmentar_separado_e_unido(): NOVO! Implementação solicitada
     
-    PARA VISUALIZAÇÃO: Use ExibicaoImagensParametrizadas do módulo exibicao_imagens_parametrizadas.py
+    🎨 PARA VISUALIZAÇÃO: Use ExibicaoImagensParametrizadas do módulo exibicao_imagens_parametrizadas.py
+    ⚡ FOCO DESTE MÓDULO: Processamento puro sem interface gráfica
     
     RESULTADO: Velocidade 3-5x superior + 4 abordagens diferentes + separação de responsabilidades
     TEMPO: ~1-2s por método individual, ~4-6s para análise completa, ~6-8s para separado e união
@@ -108,17 +143,18 @@ class SegmentacaoParametrizacaoIndicadora:
         self.min_area = min_area
         self.enhance_contrast = enhance_contrast
         
-        print(f"Segmentador parametrizado v0.4.0 (Módulo Principal) inicializado:")
-        print(f"- Dimensões alvo: {self.target_width}x{self.target_height}")
-        print(f"- Funções indicadoras de LINHAS: {self.target_height}")
-        print(f"- Funções indicadoras de COLUNAS: {self.target_width}")
-        print(f"- MÉTODOS: segmentar(), segmentar_por_colunas(), segmentar_combinado(), segmentar_separado_e_unido()")
-        print(f"- NOVA FUNCIONALIDADE: Segmentação separada e união implementada!")
-        print(f"- Vectorização NumPy: 3-5x mais rápido")
-        print(f"- Processamento em batches: múltiplas funções simultâneas")
-        print(f"- Early stopping: MSE < 200")
-        print(f"- Kernel morfológico: {self.morph_kernel_size}")
-        print(f"- VISUALIZAÇÃO: Use o módulo exibicao_imagens_parametrizadas.py")
+        print(f"🔧 Segmentador parametrizado v0.4.0 (MÓDULO PRINCIPAL - SEM visualização) inicializado:")
+        print(f"📐 Dimensões alvo: {self.target_width}x{self.target_height}")
+        print(f"📏 Funções indicadoras de LINHAS: {self.target_height}")
+        print(f"📐 Funções indicadoras de COLUNAS: {self.target_width}")
+        print(f"🎯 MÉTODOS: segmentar(), segmentar_por_colunas(), segmentar_combinado(), segmentar_separado_e_unido()")
+        print(f"✨ NOVA FUNCIONALIDADE: Segmentação separada e união implementada!")
+        print(f"⚡ Vectorização NumPy: 3-5x mais rápido")
+        print(f"🔄 Processamento em batches: múltiplas funções simultâneas")
+        print(f"⏹️ Early stopping: MSE < 200")
+        print(f"🔬 Kernel morfológico: {self.morph_kernel_size}")
+        print(f"🎨 VISUALIZAÇÃO: Use o módulo separado 'exibicao_imagens_parametrizadas.py'")
+        print(f"🔹 RESPONSABILIDADE: Este módulo foca APENAS no processamento de imagens")
     
     
     def _redimensionar_imagem(self, imagem):

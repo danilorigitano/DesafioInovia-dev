@@ -595,252 +595,60 @@ class ModeloSegmentacaoParametrizacao:
             return ""
     
     def visualizar_amostra_resultados(self, num_amostras: int = 3,
-                                    tipo_visualizacao: str = 'completo'):
+                                    tipo_visualizacao: str = 'auto'):
         """
-        Visualiza uma amostra dos resultados processados
+        Visualiza uma amostra dos resultados processados.
+        
+        NOTA: Visualização agora delegada ao módulo exibicao_imagens_parametrizadas.py
+        conforme separação de responsabilidades solicitada.
         
         Args:
             num_amostras (int): Número de amostras a visualizar
-            tipo_visualizacao (str): 'simples', 'completo' ou 'metricas'
+            tipo_visualizacao (str): 'auto', 'simples', 'completo', 'metricas' ou '4_resultados'
         """
         try:
-            import matplotlib
-            matplotlib.use('TkAgg')  # Força backend interativo no Windows
-            import matplotlib.pyplot as plt
+            from exibicao_imagens_parametrizadas import ExibicaoImagensParametrizadas
             
             # Filtrar resultados com sucesso
             resultados_sucesso = [r for r in self.resultados if r['sucesso']]
             
             if not resultados_sucesso:
                 logger.warning("Nenhum resultado com sucesso para visualizar")
+                print("⚠️ Nenhum resultado com sucesso para visualizar")
                 return
             
-            # Selecionar amostras
-            amostras = resultados_sucesso[:num_amostras]
-            
-            for i, resultado in enumerate(amostras):
+            # Preparar dados para o visualizador
+            resultados_para_visualizar = []
+            for resultado in resultados_sucesso[:num_amostras]:
                 variavel = resultado['variavel']
                 imagens_sucesso = [img for img in resultado['resultados_imagens'] if img['sucesso']]
                 
-                if not imagens_sucesso:
-                    continue
-                
-                if tipo_visualizacao == 'completo':
-                    self._visualizar_resultado_completo(resultado, i + 1)
-                elif tipo_visualizacao == 'simples':
-                    self._visualizar_resultado_simples(resultado, i + 1)
-                else:  # metricas
-                    self._visualizar_metricas(resultado, i + 1)
+                for img_result in imagens_sucesso:
+                    seg_result = img_result['resultado_segmentacao']
+                    # Adicionar informações de contexto
+                    seg_result['variavel'] = variavel
+                    seg_result['tipo_imagem'] = img_result['tipo_imagem']
+                    resultados_para_visualizar.append(seg_result)
             
-            plt.show()
+            # Detectar automaticamente se deve usar visualização de 4 resultados
+            if tipo_visualizacao == 'auto' and self.metodo_segmentacao == 'combinado':
+                tipo_visualizacao = '4_resultados'
+                print(f"🎯 Método combinado detectado - forçando visualização '4_resultados'")
             
-        except ImportError:
-            logger.warning("matplotlib não disponível para visualização")
+            # Usar o módulo de visualização separado
+            visualizador = ExibicaoImagensParametrizadas()
+            visualizador.visualizar_amostra_resultados(
+                resultados_para_visualizar, 
+                num_amostras, 
+                tipo_visualizacao
+            )
+            
+        except ImportError as e:
+            logger.warning(f"Módulo de visualização não disponível: {e}")
+            print("❌ Módulo exibicao_imagens_parametrizadas não encontrado")
         except Exception as e:
             logger.error(f"Erro na visualização: {e}")
-    
-    def _visualizar_resultado_completo(self, resultado: Dict, num_fig: int):
-        """Visualização completa com original, processada e máscara"""
-        import matplotlib
-        matplotlib.use('TkAgg')  # Força backend interativo
-        import matplotlib.pyplot as plt
-        
-        variavel = resultado['variavel']
-        imagens_sucesso = [img for img in resultado['resultados_imagens'] if img['sucesso']]
-        
-        # Verificar se é método combinado (4 resultados)
-        if self.metodo_segmentacao == "combinado" and imagens_sucesso:
-            primeiro_resultado = imagens_sucesso[0]['resultado_segmentacao']
-            if 'mascara_linhas_final' in primeiro_resultado:
-                self._visualizar_4_resultados(resultado, num_fig)
-                return
-        
-        # Visualização padrão para outros métodos
-        fig, axes = plt.subplots(len(imagens_sucesso), 3, figsize=(15, 5 * len(imagens_sucesso)))
-        fig.suptitle(f'Resultado #{num_fig} - Variável: {variavel}', fontsize=16)
-        
-        if len(imagens_sucesso) == 1:
-            axes = axes.reshape(1, -1)
-        
-        for i, img_result in enumerate(imagens_sucesso):
-            seg_result = img_result['resultado_segmentacao']
-            tipo_img = img_result['tipo_imagem']
-            
-            # Imagem original
-            img_original = seg_result['imagem_original']
-            axes[i, 0].imshow(img_original)
-            axes[i, 0].set_title(f'{tipo_img.capitalize()} - Original', color='blue')
-            axes[i, 0].axis('off')
-            
-            # Imagem em grayscale
-            img_gray = seg_result['imagem_gray']
-            axes[i, 1].imshow(img_gray, cmap='gray')
-            axes[i, 1].set_title(f'{tipo_img.capitalize()} - Grayscale', color='blue')
-            axes[i, 1].axis('off')
-            
-            # Máscara binária
-            mascara = seg_result['mascara_binaria']
-            axes[i, 2].imshow(mascara, cmap='gray')
-            mse = seg_result.get('mse_global', 0)
-            rms = seg_result.get('rms_global', 0)
-            axes[i, 2].set_title(f'{tipo_img.capitalize()} - Máscara (MSE: {mse:.3f}, RMS: {rms:.3f})', color='blue')
-            axes[i, 2].axis('off')
-        
-        plt.tight_layout()
-    
-    def _visualizar_4_resultados(self, resultado: Dict, num_fig: int):
-        """Visualização dos 4 resultados: linhas, colunas, união e intersecção"""
-        import matplotlib
-        matplotlib.use('TkAgg')  # Força backend interativo
-        import matplotlib.pyplot as plt
-        
-        variavel = resultado['variavel']
-        imagens_sucesso = [img for img in resultado['resultados_imagens'] if img['sucesso']]
-        
-        for idx_img, img_result in enumerate(imagens_sucesso):
-            seg_result = img_result['resultado_segmentacao']
-            tipo_img = img_result['tipo_imagem']
-            
-            # Criar figura com 6 subplots lado a lado: original, grayscale, e os 4 resultados
-            fig, axes = plt.subplots(1, 6, figsize=(30, 5))
-            fig.suptitle(f'4 Resultados de Silhuetas - {variavel} - {tipo_img.capitalize()}', fontsize=16, color='blue')
-            
-            # Posição 0: Original
-            img_original = seg_result['imagem_original']
-            axes[0].imshow(img_original)
-            axes[0].set_title('Original', color='blue')
-            axes[0].axis('off')
-            
-            # Posição 1: Grayscale
-            img_gray = seg_result['imagem_gray']
-            axes[1].imshow(img_gray, cmap='gray')
-            axes[1].set_title('Grayscale', color='blue')
-            axes[1].axis('off')
-            
-            # Posição 2: Somente Linhas
-            mascara_linhas = seg_result['mascara_linhas_final']
-            pixels_linhas = seg_result.get('pixels_linhas', 0)
-            mse_linhas = seg_result.get('mse_global_linhas', 0)
-            axes[2].imshow(mascara_linhas, cmap='gray')
-            axes[2].set_title(f'1. Somente Linhas\n{pixels_linhas} pixels | MSE: {mse_linhas:.1f}', color='blue')
-            axes[2].axis('off')
-            
-            # Posição 3: Somente Colunas
-            mascara_colunas = seg_result['mascara_colunas_final']
-            pixels_colunas = seg_result.get('pixels_colunas', 0)
-            mse_colunas = seg_result.get('mse_global_colunas', 0)
-            axes[3].imshow(mascara_colunas, cmap='gray')
-            axes[3].set_title(f'2. Somente Colunas\n{pixels_colunas} pixels | MSE: {mse_colunas:.1f}', color='blue')
-            axes[3].axis('off')
-            
-            # Posição 4: União
-            mascara_uniao = seg_result['mascara_uniao_final']
-            pixels_uniao = seg_result.get('pixels_uniao', 0)
-            mse_combinado = seg_result.get('mse_global_combinado', 0)
-            axes[4].imshow(mascara_uniao, cmap='gray')
-            axes[4].set_title(f'3. União (L ∪ C)\n{pixels_uniao} pixels | MSE: {mse_combinado:.1f}', color='blue')
-            axes[4].axis('off')
-            
-            # Posição 5: Intersecção
-            mascara_intersecao = seg_result['mascara_intersecao_final']
-            pixels_intersecao = seg_result.get('pixels_intersecao', 0)
-            axes[5].imshow(mascara_intersecao, cmap='gray')
-            axes[5].set_title(f'4. Intersecção (L ∩ C)\n{pixels_intersecao} pixels', color='blue')
-            axes[5].axis('off')
-            
-            plt.tight_layout()
-            
-            # Adicionar informações de sobreposição na figura
-            percentual_intersecao_uniao = seg_result.get('percentual_intersecao_uniao', 0)
-            percentual_intersecao_linhas = seg_result.get('percentual_intersecao_linhas', 0)
-            percentual_intersecao_colunas = seg_result.get('percentual_intersecao_colunas', 0)
-            
-            fig.text(0.5, 0.02, 
-                f'Análise de Sobreposição: Intersecção vs União: {percentual_intersecao_uniao:.1f}% | '
-                f'vs Linhas: {percentual_intersecao_linhas:.1f}% | vs Colunas: {percentual_intersecao_colunas:.1f}%', 
-                ha='center', fontsize=10, style='italic')
-    
-    def _visualizar_resultado_simples(self, resultado: Dict, num_fig: int):
-        """Visualização simples apenas com original e máscara"""
-        import matplotlib.pyplot as plt
-        
-        variavel = resultado['variavel']
-        imagens_sucesso = [img for img in resultado['resultados_imagens'] if img['sucesso']]
-        
-        fig, axes = plt.subplots(len(imagens_sucesso), 2, figsize=(10, 5 * len(imagens_sucesso)))
-        fig.suptitle(f'Resultado #{num_fig} - Variável: {variavel}', fontsize=16)
-        
-        if len(imagens_sucesso) == 1:
-            axes = axes.reshape(1, -1)
-        
-        for i, img_result in enumerate(imagens_sucesso):
-            seg_result = img_result['resultado_segmentacao']
-            tipo_img = img_result['tipo_imagem']
-            
-            # Imagem original
-            img_original = seg_result['imagem_original']
-            axes[i, 0].imshow(img_original)
-            axes[i, 0].set_title(f'{tipo_img.capitalize()} - Original')
-            axes[i, 0].axis('off')
-            
-            # Máscara binária
-            mascara = seg_result['mascara_binaria']
-            axes[i, 1].imshow(mascara, cmap='gray')
-            axes[i, 1].set_title(f'{tipo_img.capitalize()} - Segmentação')
-            axes[i, 1].axis('off')
-        
-        plt.tight_layout()
-    
-    def _visualizar_metricas(self, resultado: Dict, num_fig: int):
-        """Visualização focada em métricas e estatísticas"""
-        import matplotlib.pyplot as plt
-        
-        variavel = resultado['variavel']
-        
-        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(12, 8))
-        fig.suptitle(f'Métricas #{num_fig} - Variável: {variavel}', fontsize=16)
-        
-        # Métricas de qualidade por imagem
-        tipos_imagens = []
-        mses = []
-        rmss = []
-        
-        for img_result in resultado['resultados_imagens']:
-            if img_result['sucesso']:
-                tipos_imagens.append(img_result['tipo_imagem'])
-                mses.append(img_result['metricas_qualidade']['mse_global'])
-                rmss.append(img_result['metricas_qualidade']['rms_global'])
-        
-        # Gráfico MSE
-        ax1.bar(tipos_imagens, mses, color='skyblue')
-        ax1.set_title('MSE por Imagem')
-        ax1.set_ylabel('MSE')
-        
-        # Gráfico RMS
-        ax2.bar(tipos_imagens, rmss, color='lightgreen')
-        ax2.set_title('RMS por Imagem')
-        ax2.set_ylabel('RMS')
-        
-        # Estatísticas de máscara (se disponível)
-        if resultado['resultados_imagens']:
-            primeiro_resultado = resultado['resultados_imagens'][0]
-            if 'estatisticas_mascara' in primeiro_resultado:
-                stats_mascara = primeiro_resultado['estatisticas_mascara']
-                if stats_mascara:
-                    labels = ['Segmentado', 'Fundo']
-                    sizes = [stats_mascara.get('pixels_segmentados', 0), 
-                            stats_mascara.get('pixels_fundo', 0)]
-                    ax3.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90)
-                    ax3.set_title('Distribuição de Pixels')
-        
-        # Tempo de processamento
-        tempos = [img_result['tempo_processamento'] for img_result in resultado['resultados_imagens']]
-        ax4.bar(range(len(tempos)), tempos, color='orange')
-        ax4.set_title('Tempo de Processamento')
-        ax4.set_ylabel('Segundos')
-        ax4.set_xlabel('Imagem')
-        
-        plt.tight_layout()
+            print(f"❌ Erro na visualização: {e}")
 
 # Exemplo de uso
 if __name__ == "__main__":

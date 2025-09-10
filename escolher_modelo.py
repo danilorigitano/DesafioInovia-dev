@@ -237,7 +237,7 @@ def processar_com_modelo(modelo: Union[ModeloSegmentacaoDeepLabV3, ModeloSegment
         try:
             modelo.visualizar_amostra_resultados(
                 num_amostras=min(3, limite_registros),
-                tipo_visualizacao='completo'
+                tipo_visualizacao='auto'
             )
             print("✅ Silhuetas exibidas com sucesso!")
         except Exception as e:

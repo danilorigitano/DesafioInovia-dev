@@ -77,38 +77,41 @@ graph TD
 
 ```mermaid
 flowchart TD
-    Start([🚀 Início do Sistema]) --> ValidData[📂 Validar Dados CSV/Imagens]
-    ValidData --> StructData[🏗️ Estruturar por Gênero/Posição]
-    StructData --> ChooseModel{🎛️ Escolher Modelo}
+    Start([🚀 Início do Sistema<br/>main.py]) --> ValidData[📂 Validar Dados CSV/Imagens<br/>ImportadorDados]
+    ValidData --> StructData[🏗️ Estruturar por Gênero/Posição<br/>Masculino/Feminino - Pre/Pos]
+    StructData --> DatasetSelect[📊 Selecionar Dataset<br/>Índice específico]
+    DatasetSelect --> ChooseModel{🎛️ Escolher Modelo<br/>escolher_modelo.py}
     
-    ChooseModel -->|1️⃣| DeepLabV3[🧠 DeepLabV3 + ResNet101]
-    ChooseModel -->|2️⃣| Parametrizacao[📐 Parametrização v0.4.0]
+    ChooseModel -->|1️⃣| DeepLabV3[🧠 DeepLabV3 + ResNet101<br/>Alta Precisão]
+    ChooseModel -->|2️⃣| Parametrizacao[📐 Parametrização v0.4.0<br/>Alta Velocidade]
     
-    DeepLabV3 --> DLProcess[🎯 Segmentação Semântica<br/>PyTorch + GPU/CPU]
-    Parametrizacao --> MethodChoice{🔧 Método Parametrização}
+    DeepLabV3 --> DLProcess[🎯 Segmentação Semântica<br/>PyTorch + GPU/CPU<br/>Threshold Adaptativo]
+    Parametrizacao --> MethodChoice{🔧 Método Parametrização<br/>4 Opções Especializadas}
     
-    MethodChoice -->|1️⃣| LinhasMethod[📏 768 Funções Horizontais<br/>Parâmetros a,b]
-    MethodChoice -->|2️⃣| ColunasMethod[📐 1024 Funções Verticais<br/>Parâmetros c,d]
-    MethodChoice -->|3️⃣| CombinedMethod[🔗 Método Combinado<br/>Linhas + Colunas]
+    MethodChoice -->|1️⃣| LinhasMethod[📏 768 Funções Horizontais<br/>Parâmetros a,b<br/>Segmentação por Linhas]
+    MethodChoice -->|2️⃣| ColunasMethod[📐 1024 Funções Verticais<br/>Parâmetros c,d<br/>Segmentação por Colunas]
+    MethodChoice -->|3️⃣| CombinedMethod[🔗 Método Combinado<br/>Fusão Inteligente<br/>Linhas + Colunas]
+    MethodChoice -->|4️⃣| SeparatedMethod[🔄 Separado + União<br/>Processamento Independente]
     
-    LinhasMethod --> VectorProcess[⚡ Vectorização NumPy<br/>Early Stop MSE < 200]
+    LinhasMethod --> VectorProcess[⚡ Vectorização NumPy<br/>Early Stop MSE < 200<br/>Batch Processing]
     ColunasMethod --> VectorProcess
     CombinedMethod --> VectorProcess
+    SeparatedMethod --> VectorProcess
     
-    DLProcess --> Results[📊 Processamento Completo]
+    DLProcess --> Results[📊 Processamento Completo<br/>Métricas + Visualizações]
     VectorProcess --> Results
     
-    Results --> Analysis{📈 Tipo de Análise}
-    Analysis -->|Individual| IndividualMetrics[� Métricas Individuais]
-    Analysis -->|Comparativa| ComparativeMetrics[🔄 Análise Comparativa]
-    Analysis -->|Combinada| CombinedMetrics[🔗 Métricas Combinadas]
+    Results --> Analysis{📈 Tipo de Análise<br/>Individual/Comparativa/Combinada}
+    Analysis -->|Individual| IndividualMetrics[📊 Métricas Individuais<br/>MSE específico por método]
+    Analysis -->|Comparativa| ComparativeMetrics[🔄 Análise Comparativa<br/>4 métodos lado a lado]
+    Analysis -->|Combinada| CombinedMetrics[🔗 Métricas Combinadas<br/>União + Interseção]
     
-    IndividualMetrics --> Visualizations[🖼️ Visualizações Especializadas]
+    IndividualMetrics --> Visualizations[🖼️ Visualizações Especializadas<br/>Overlays + Histogramas]
     ComparativeMetrics --> Visualizations
     CombinedMetrics --> Visualizations
     
-    Visualizations --> SaveJSON[💾 Salvar Resultados JSON]
-    SaveJSON --> End([✅ Processamento Concluído])
+    Visualizations --> SaveJSON[💾 Salvar Resultados JSON<br/>Estatísticas + Parâmetros]
+    SaveJSON --> End([✅ Processamento Concluído<br/>Relatório Gerado])
     
     classDef start fill:#4CAF50,stroke:#2E7D32,color:#fff
     classDef process fill:#2196F3,stroke:#1976D2,color:#fff
@@ -116,11 +119,12 @@ flowchart TD
     classDef model fill:#9C27B0,stroke:#7B1FA2,color:#fff
     classDef analysis fill:#795548,stroke:#5D4037,color:#fff
     classDef output fill:#F44336,stroke:#C62828,color:#fff
+    classDef finalization fill:#607D8B,stroke:#455A64,color:#fff
     
     class Start,End start
-    class ValidData,StructData,Results,Visualizations,SaveJSON process
+    class ValidData,StructData,DatasetSelect,Results,Visualizations,SaveJSON process
     class ChooseModel,MethodChoice,Analysis decision
-    class DeepLabV3,Parametrizacao,LinhasMethod,ColunasMethod,CombinedMethod,DLProcess,VectorProcess model
+    class DeepLabV3,Parametrizacao,LinhasMethod,ColunasMethod,CombinedMethod,SeparatedMethod,DLProcess,VectorProcess model
     class IndividualMetrics,ComparativeMetrics,CombinedMetrics analysis
 ```
 
@@ -130,15 +134,15 @@ flowchart TD
 graph TB
     subgraph "🎯 Interface de Seleção"
         Menu[📋 Menu Interativo<br/>escolher_modelo.py]
-        User{👤 Escolha do Usuário}
+        User{👤 Escolha do Usuário<br/>1-2 + Submenu}
         Menu --> User
     end
     
     subgraph "🧠 Pipeline DeepLabV3"
-        DL_Config[🔧 Configuração Automática]
-        DL_Model[ModeloSegmentacaoDeepLabV3]
-        DL_Engine[SegmentacaoDeepLabV3]
-        DL_Features[🎯 PyTorch + ResNet101<br/>📊 Alta Precisão<br/>⚙️ GPU/CPU Adaptativo]
+        DL_Config[🔧 Configuração Automática<br/>GPU/CPU Detection]
+        DL_Model[ModeloSegmentacaoDeepLabV3<br/>ResNet101 Backbone]
+        DL_Engine[SegmentacaoDeepLabV3<br/>Threshold Adaptativo]
+        DL_Features[🎯 PyTorch + ResNet101<br/>📊 Alta Precisão<br/>⚙️ GPU/CPU Adaptativo<br/>🎨 Visualização Avançada]
         
         DL_Config --> DL_Model
         DL_Model --> DL_Engine
@@ -146,58 +150,336 @@ graph TB
     end
     
     subgraph "📐 Pipeline Parametrização v0.4.0"
-        Param_Config[🔧 Configuração Otimizada]
-        Param_Model[ModeloSegmentacaoParametrizacao]
-        Param_Engine[SegmentacaoParametrizacaoIndicadora]
-        Param_Choice{🎛️ Método Específico}
+        Param_Config[🔧 Configuração Otimizada<br/>Resolução 1024x768]
+        Param_Model[ModeloSegmentacaoParametrizacao<br/>Múltiplos Métodos]
+        Param_Engine[SegmentacaoParametrizacaoIndicadora<br/>Early Stopping MSE]
+        Param_Choice{🎛️ Método Específico<br/>4 Opções Expandidas}
         
         Param_Config --> Param_Model
         Param_Model --> Param_Engine
         Param_Engine --> Param_Choice
         
-        Param_Choice -->|1️⃣| Linhas_Features[📏 768 Funções Horizontais<br/>⚡ Vectorização NumPy<br/>🎯 Early Stopping MSE < 200]
-        Param_Choice -->|2️⃣| Colunas_Features[📐 1024 Funções Verticais<br/>🔬 Parâmetros c,d<br/>📊 Análise Perpendicular]
-        Param_Choice -->|3️⃣| Combined_Features[🔗 Método Híbrido<br/>🎨 Múltiplas Fusões<br/>📈 Análise Comparativa]
+        Param_Choice -->|1️⃣| Linhas_Features[📏 768 Funções Horizontais<br/>⚡ Vectorização NumPy<br/>🎯 Early Stopping MSE < 200<br/>📊 Parâmetros a,b otimizados]
+        Param_Choice -->|2️⃣| Colunas_Features[📐 1024 Funções Verticais<br/>🔬 Parâmetros c,d<br/>📊 Análise Perpendicular<br/>⚡ Processamento Vectorizado]
+        Param_Choice -->|3️⃣| Combined_Features[🔗 Método Híbrido<br/>🎨 Múltiplas Fusões<br/>📈 Análise Comparativa<br/>🔄 União + Interseção]
+        Param_Choice -->|4️⃣| Separated_Features[🔄 Separado + União<br/>📊 Processamento Independente<br/>🎯 Análise Individual<br/>📈 Métricas Comparativas]
     end
     
     User -->|1️⃣ DeepLabV3| DL_Config
     User -->|2️⃣ Parametrização| Param_Config
     
-    DL_Features --> Results[📊 Resultados Unificados]
+    DL_Features --> Results[📊 Resultados Unificados<br/>JSON + Visualizações]
     Linhas_Features --> Results
     Colunas_Features --> Results
     Combined_Features --> Results
+    Separated_Features --> Results
     
     classDef interface fill:#E1F5FE,stroke:#0277BD
     classDef deeplab fill:#E8F5E8,stroke:#388E3C
     classDef param fill:#FFF3E0,stroke:#F57C00
     classDef methods fill:#F3E5F5,stroke:#7B1FA2
     classDef output fill:#FFEBEE,stroke:#C62828
+    classDef advanced fill:#E0F2F1,stroke:#00695C
     
     class Menu,User interface
     class DL_Config,DL_Model,DL_Engine,DL_Features deeplab
     class Param_Config,Param_Model,Param_Engine,Param_Choice param
     class Linhas_Features,Colunas_Features,Combined_Features methods
+    class Separated_Features advanced
     class Results output
 ```
-    end
-    
-    subgraph "🧠 Pipeline DeepLabV3"
-        DL_Config[🔧 Configuração Automática]
-        DL_Model[ModeloSegmentacaoDeepLabV3]
-        DL_Engine[SegmentacaoDeepLabV3]
-        DL_Features[🎯 PyTorch + ResNet101<br/>📊 Alta Precisão<br/>⚙️ GPU/CPU Adaptativo]
+
+### 📊 Arquitetura de Dados e Performance
+
+```mermaid
+graph TD
+    subgraph "📊 Estrutura de Dados"
+        CSV[📄 Arquivo CSV<br/>Dados Corporais]
+        Images[🖼️ Pastas de Imagens<br/>syn_[m/f]XXXXXX-X-[Pre/Pos]]
         
-        DL_Config --> DL_Model
-        DL_Model --> DL_Engine
-        DL_Engine --> DL_Features
+        CSV --> Validation{🔍 Validação<br/>CSV ↔ Imagens}
+        Images --> Validation
+        
+        Validation --> Structure[🏗️ Estruturação<br/>Por Gênero/Posição]
+        Structure --> Dataset[📦 Dataset Válido<br/>Registros Correspondentes]
     end
     
-    subgraph "📐 Pipeline Parametrização v0.2.3"
-        Param_Config[🔧 Configuração Otimizada]
-        Param_Model[ModeloSegmentacaoParametrizacao]
-        Param_Engine[SegmentacaoParametrizacaoIndicadora]
-        Param_Features[⚡ Vectorização NumPy<br/>🎯 Early Stopping MSE<br/>📦 Processamento em Batches]
+    subgraph "⚡ Performance v0.4.0"
+        Input[🔢 Entrada: 1024x768]
+        
+        Input --> DeepLabTime[🧠 DeepLabV3<br/>~15s por imagem<br/>Alta Precisão]
+        Input --> ParamTime[📐 Parametrização<br/>~1-2s por método<br/>Alta Velocidade]
+        
+        DeepLabTime --> DeepLabResult[📊 Resultado DL<br/>Confidence + IoU]
+        ParamTime --> ParamResult[📊 Resultado Param<br/>MSE < 200]
+        
+        ParamResult --> Methods{🎛️ Múltiplos Métodos}
+        Methods --> M1[📏 Linhas: ~1-2s]
+        Methods --> M2[📐 Colunas: ~1-2s]
+        Methods --> M3[🔗 Combinado: ~2-3s]
+        Methods --> M4[🔄 Separado: ~3-4s]
+    end
+    
+    subgraph "🎯 Otimizações Técnicas"
+        Vector[⚡ Vectorização NumPy<br/>3-5x Velocidade]
+        Batch[📦 Processamento Batches<br/>50 funções simultâneas]
+        Early[🎯 Early Stopping<br/>MSE < 200 automático]
+        Memory[💾 Gestão Memória<br/>Otimizada para grandes datasets]
+        
+        Vector --> Batch
+        Batch --> Early
+        Early --> Memory
+    end
+    
+    Dataset --> Input
+    DeepLabResult --> Analytics[📈 Analytics Unificados]
+    M1 --> Analytics
+    M2 --> Analytics
+    M3 --> Analytics
+    M4 --> Analytics
+    Memory --> Analytics
+    
+    classDef data fill:#E3F2FD,stroke:#1976D2
+    classDef performance fill:#F3E5F5,stroke:#7B1FA2
+    classDef optimization fill:#E8F5E8,stroke:#388E3C
+    classDef result fill:#FFF3E0,stroke:#F57C00
+    
+    class CSV,Images,Validation,Structure,Dataset data
+    class Input,DeepLabTime,ParamTime,Methods,M1,M2,M3,M4 performance
+    class Vector,Batch,Early,Memory optimization
+    class DeepLabResult,ParamResult,Analytics result
+```
+
+## 🔄 Fluxo de Desenvolvimento e Roadmap
+
+```mermaid
+timeline
+    title 🚀 Linha do Tempo do Projeto INOVIA
+    
+    section v0.1.0 - Fundação
+        2025-09-08 : 📊 Base de Dados
+                  : ✅ Validação CSV/Imagens
+                  : ✅ Estruturação por Gênero
+                  : ✅ Relatórios Automáticos
+    
+    section v0.2.0 - Segmentação
+        2025-09-08 : 🖼️ Segmentação DeepLabV3
+                  : ✅ Modelo ResNet50
+                  : ✅ Processamento GPU/CPU
+                  : ✅ Visualização Interativa
+    
+    section v0.2.1 - Refatoração
+        2025-09-09 : 🔧 Refatoração Inteligente
+                  : ✅ Nomenclatura Clara
+                  : ✅ Código Limpo
+                  : ✅ Arquitetura Modular
+    
+    section v0.2.2 - Múltiplos Modelos
+        2025-09-09 : 🎛️ Sistema de Escolha
+                  : ✅ DeepLabV3 + ResNet101
+                  : ✅ Parametrização Indicadora
+                  : ✅ Interface de Escolha
+    
+    section v0.2.3 - Otimizações
+        2025-09-09 : ⚡ Performance Extrema
+                  : ✅ Vectorização NumPy
+                  : ✅ Early Stopping MSE
+                  : ✅ Processamento Batches
+    
+    section v0.4.0 - Multidimensional
+        2025-09-10 : 🌟 Segmentação 4 Métodos
+                  : ✅ 768 Funções Horizontais
+                  : ✅ 1024 Funções Verticais
+                  : ✅ Método Combinado
+                  : ✅ Separado + União
+    
+    section v0.5.0 - Analytics
+        Futuro    : 🧮 Analytics Avançados
+                  : 🔄 Correlações Automáticas
+                  : 📊 Dashboard Interativo
+                  : 📈 Métricas Avançadas
+    
+    section v0.6.0 - Interface Web
+        Futuro    : 🌐 Interface Gráfica
+                  : 🖥️ Streamlit/Dash
+                  : 👥 Multi-usuário
+                  : 📱 Responsivo
+```
+
+### 💾 Arquitetura de Arquivos do Projeto
+
+```mermaid
+graph TD
+    subgraph "📂 Estrutura Principal"
+        Main[📄 main.py<br/>Coordenador Principal]
+        Import[📄 importa_dados.py<br/>Gerenciamento Dados]
+        Choose[📄 escolher_modelo.py<br/>Seleção de Modelos]
+        
+        Main --> Import
+        Main --> Choose
+    end
+    
+    subgraph "🧠 Módulos DeepLabV3"
+        ModelDL[📄 modelo_segmentacao_Deeplabv3.py<br/>Wrapper do Modelo]
+        SegmentDL[📄 segmentacao_imagens_Deeplabv3.py<br/>Engine de Processamento]
+        
+        Choose --> ModelDL
+        ModelDL --> SegmentDL
+    end
+    
+    subgraph "📐 Módulos Parametrização"
+        ModelParam[📄 modelo_segmentacao_parametrizacao.py<br/>Wrapper Parametrização]
+        SegmentParam[📄 segmentacao_imagens_parametrizacao_indicadora.py<br/>Engine 4 Métodos]
+        
+        Choose --> ModelParam
+        ModelParam --> SegmentParam
+    end
+    
+    subgraph "🎨 Módulos Visualização"
+        Display[📄 exibicao_imagens_parametrizadas.py<br/>Visualizações Especializadas]
+        
+        SegmentParam --> Display
+        SegmentDL --> Display
+    end
+    
+    subgraph "📊 Configuração e Dados"
+        Requirements[📄 requirements.txt<br/>Dependências Python]
+        README[📄 README.md<br/>Documentação]
+        CHANGELOG[📄 CHANGELOG.md<br/>Histórico Versões]
+        Cache[📂 __pycache__/<br/>Python Bytecode]
+        
+        Main -.-> Requirements
+        README -.-> CHANGELOG
+    end
+    
+    classDef main fill:#4CAF50,stroke:#2E7D32,color:#fff
+    classDef deeplab fill:#2196F3,stroke:#1976D2,color:#fff
+    classDef param fill:#FF9800,stroke:#F57C00,color:#fff
+    classDef visual fill:#9C27B0,stroke:#7B1FA2,color:#fff
+    classDef config fill:#607D8B,stroke:#455A64,color:#fff
+    
+    class Main,Import,Choose main
+    class ModelDL,SegmentDL deeplab
+    class ModelParam,SegmentParam param
+    class Display visual
+    class Requirements,README,CHANGELOG,Cache config
+```
+
+### 🔍 Comparação de Métodos de Segmentação
+
+```mermaid
+graph LR
+    subgraph "🧠 DeepLabV3 Method"
+        DL_Input[🖼️ Input Image<br/>Original Resolution]
+        DL_Process[🔥 PyTorch Processing<br/>ResNet101 Backbone]
+        DL_Output[🎯 Semantic Mask<br/>High Precision]
+        
+        DL_Input --> DL_Process
+        DL_Process --> DL_Output
+        
+        DL_Metrics[📊 Metrics:<br/>• IoU Score<br/>• Confidence<br/>• Processing Time: ~15s<br/>• GPU Recommended]
+        DL_Output --> DL_Metrics
+    end
+    
+    subgraph "📐 Parametrization Methods"
+        P_Input[🖼️ Input Image<br/>1024x768]
+        
+        P_Input --> P1[📏 Lines Method<br/>768 Horizontal Functions<br/>Parameters a,b]
+        P_Input --> P2[📐 Columns Method<br/>1024 Vertical Functions<br/>Parameters c,d]
+        P_Input --> P3[🔗 Combined Method<br/>Smart Fusion<br/>Lines + Columns]
+        P_Input --> P4[🔄 Separated + Union<br/>Independent Processing<br/>Individual Analysis]
+        
+        P1 --> P1_Out[📊 Output Lines<br/>MSE < 200<br/>~1-2s]
+        P2 --> P2_Out[📊 Output Columns<br/>MSE < 200<br/>~1-2s]
+        P3 --> P3_Out[📊 Combined Output<br/>Weighted MSE<br/>~2-3s]
+        P4 --> P4_Out[📊 Union Output<br/>Comparative Analysis<br/>~3-4s]
+        
+        P1_Out --> P_Analysis[🎨 Comparative Analysis<br/>4 Methods Side by Side]
+        P2_Out --> P_Analysis
+        P3_Out --> P_Analysis
+        P4_Out --> P_Analysis
+    end
+    
+    subgraph "⚖️ Method Comparison"
+        Compare[🔄 Performance vs Precision<br/>DeepLabV3 vs Parametrization]
+        
+        Compare --> Precision[🎯 Precision:<br/>DeepLabV3: ⭐⭐⭐⭐⭐<br/>Parametrization: ⭐⭐⭐⭐]
+        Compare --> Speed[⚡ Speed:<br/>DeepLabV3: ⭐⭐<br/>Parametrization: ⭐⭐⭐⭐⭐]
+        Compare --> Resources[💻 Resources:<br/>DeepLabV3: GPU + 4GB VRAM<br/>Parametrization: CPU + 2GB RAM]
+    end
+    
+    DL_Metrics --> Compare
+    P_Analysis --> Compare
+    
+    classDef deeplab fill:#1976D2,stroke:#0D47A1,color:#fff
+    classDef param fill:#388E3C,stroke:#1B5E20,color:#fff
+    classDef comparison fill:#F57C00,stroke:#E65100,color:#fff
+    classDef metrics fill:#7B1FA2,stroke:#4A148C,color:#fff
+    classDef output fill:#D32F2F,stroke:#B71C1C,color:#fff
+    
+    class DL_Input,DL_Process,DL_Output deeplab
+    class P_Input,P1,P2,P3,P4 param
+    class Compare,Precision,Speed,Resources comparison
+    class DL_Metrics,P1_Out,P2_Out,P3_Out,P4_Out,P_Analysis metrics
+```
+```
+### 🔧 Diagrama de Tecnologias e Dependências
+
+```mermaid
+graph LR
+    subgraph "🐍 Python Ecosystem"
+        Python[🐍 Python 3.8+<br/>Core Language]
+        NumPy[🔢 NumPy<br/>Vectorização]
+        Pandas[📊 Pandas<br/>Manipulação Dados]
+        Matplotlib[📈 Matplotlib<br/>Visualizações]
+        
+        Python --> NumPy
+        Python --> Pandas
+        Python --> Matplotlib
+    end
+    
+    subgraph "🧠 Deep Learning Stack"
+        PyTorch[� PyTorch 2.0+<br/>Neural Networks]
+        TorchVision[�️ TorchVision<br/>Computer Vision]
+        CUDA[⚡ CUDA<br/>GPU Acceleration]
+        
+        PyTorch --> TorchVision
+        PyTorch --> CUDA
+    end
+    
+    subgraph "🖼️ Image Processing"
+        OpenCV[📷 OpenCV<br/>Image Operations]
+        PIL[🎨 Pillow<br/>Image I/O]
+        Scipy[🔬 SciPy<br/>Scientific Computing]
+        
+        OpenCV --> PIL
+        PIL --> Scipy
+    end
+    
+    subgraph "🎯 Models & Algorithms"
+        DeepLabV3[🧠 DeepLabV3<br/>Semantic Segmentation]
+        ResNet101[�️ ResNet101<br/>Backbone CNN]
+        IndicatorFunc[📐 Funções Indicadoras<br/>Parametrização Matemática]
+        
+        DeepLabV3 --> ResNet101
+        IndicatorFunc --> NumPy
+    end
+    
+    NumPy --> IndicatorFunc
+    PyTorch --> DeepLabV3
+    OpenCV --> DeepLabV3
+    Scipy --> IndicatorFunc
+    
+    classDef python fill:#306998,stroke:#FFD43B,color:#fff
+    classDef dl fill:#EE4C2C,stroke:#FF6B35,color:#fff
+    classDef image fill:#5C85D6,stroke:#2C5AA0,color:#fff
+    classDef model fill:#FF6B35,stroke:#D74315,color:#fff
+    
+    class Python,NumPy,Pandas,Matplotlib python
+    class PyTorch,TorchVision,CUDA dl
+    class OpenCV,PIL,Scipy image
+    class DeepLabV3,ResNet101,IndicatorFunc model
+```
         
         Param_Config --> Param_Model
         Param_Model --> Param_Engine
