@@ -2,7 +2,7 @@
 
 > **Sistema de Segmentação de Imagens Sintéticas com Medidas Corporais**
 > 
-> Histórico completo de desenvolvimento do Projeto INOVIA - da fundação sólida à segmentação multidimensional.
+> Histórico completo de desenvolvimento do Projeto INOVIA - da fundação sólida à segmentação multidimensional com detecção de bounding boxes.
 
 ---
 
@@ -19,11 +19,88 @@ O Projeto INOVIA seguiu uma evolução estruturada e iterativa, com cada versão
 5. **⚡ Otimizações** - Performance extrema com vectorização
 6. **🔗 Extensões** - Segmentação multidimensional (linhas + colunas)
 7. **🌟 Consolidação** - Quatro métodos especializados com análise comparativa
-8. **🔮 Próximo** - Analytics avançados e interface gráfica
+8. **📦 Bounding Boxes** - Detecção automática de retângulos delimitadores
+9. **🔮 Próximo** - Analytics avançados e interface gráfica
 
 ---
 
 ## 🚀 Versões Detalhadas
+
+### [0.5.0] - 2025-09-10 - 📦 Detecção de Bounding Boxes nas Silhuetas
+
+> **NOVA FUNCIONALIDADE:** Detecção Automática de Retângulos Delimitadores
+
+#### 🎯 Características Principais
+
+- **📦 Detecção de Bounding Boxes**: Algoritmos para localizar retângulos ao redor das silhuetas
+- **🔍 Múltiplas Estratégias**: Contornos OpenCV e coordenadas extremas
+- **🎨 Visualização Avançada**: Sistema dedicado para exibir bounding boxes
+- **📊 Análise Comparativa**: Métricas detalhadas entre diferentes tipos de silhuetas
+
+#### ✨ Novos Módulos Adicionados
+
+**🔧 Bounding_box.py:**
+```python
+class BoundingBoxDetector:
+├── detectar_bounding_boxes(): Detecção principal
+├── detectar_por_contornos(): Método OpenCV
+├── detectar_por_coordenadas_extremas(): Método alternativo
+├── filtrar_por_area(): Filtragem inteligente
+└── processar_resultado_segmentacao(): Processamento completo
+```
+
+**🖼️ exibicao_BBox_imagens.py:**
+```python
+class ExibicaoBBoxImagens:
+├── visualizar_todas_bboxes(): Visualização completa
+├── visualizar_bbox_individual(): Foco em uma silhueta
+├── visualizar_comparativo_bboxes(): Análise comparativa
+└── visualizar_sobreposicao(): Sobreposição na imagem original
+```
+
+#### 🎛️ Funcionalidades Implementadas
+
+**📦 Detecção Inteligente:**
+- Algoritmo de contornos OpenCV para múltiplas bounding boxes
+- Método de coordenadas extremas para bounding box única
+- Filtragem por área mínima para eliminar ruídos
+- Cálculo automático de métricas (cobertura, área média, etc.)
+
+**🎨 Visualização Completa:**
+- Exibição de todas as silhuetas com suas bounding boxes
+- Comparação visual entre linhas, colunas, união e intersecção
+- Sobreposição das bounding boxes na imagem original
+- Gráficos comparativos de métricas
+
+**📊 Métricas Avançadas:**
+- Número de bounding boxes detectadas por silhueta
+- Percentual de cobertura da área total
+- Área total e média das bounding boxes
+- Análise comparativa entre diferentes tipos
+
+#### 🔧 Arquivo de Exemplo
+
+**📝 exemplo_bounding_box.py:**
+- Demonstração completa do uso dos novos módulos
+- Configurações customizáveis para diferentes cenários
+- Interface interativa para entrada de imagens
+- Exemplos de diferentes estratégias de detecção
+
+#### 🎯 Compatibilidade
+
+- ✅ Totalmente compatível com segmentacao_imagens_parametrizacao_indicadora.py
+- ✅ Integra com exibicao_imagens_parametrizadas.py existente
+- ✅ Suporte para todos os métodos de segmentação (linhas, colunas, união, intersecção)
+- ✅ Funciona com imagens de qualquer formato suportado pelo OpenCV
+
+#### 📈 Benefícios
+
+- **🎯 Localização Precisa**: Identifica automaticamente as regiões de interesse
+- **📊 Análise Quantitativa**: Métricas objetivas para avaliar a segmentação
+- **🎨 Visualização Clara**: Interface visual intuitiva para análise dos resultados
+- **🔧 Flexibilidade**: Configurações ajustáveis para diferentes tipos de imagem
+
+---
 
 ### [0.4.0] - 2025-09-10 - 🌟 Segmentação Multidimensional Consolidada
 

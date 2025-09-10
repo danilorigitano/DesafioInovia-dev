@@ -2,12 +2,12 @@
 
 Sistema modular para processamento e análise de dados de imagens sintéticas com medidas corporais.
 
-🚀 **Versão 0.4.0** - Extensão Completa de Segmentação Multidimensional!  
+🚀 **Versão 0.5.0** - Detecção de Bounding Boxes nas Silhuetas!  
 📋 [Ver CHANGELOG.md](CHANGELOG.md) para histórico detalhado
 
 ## 📋 Visão Geral
 
-O Projeto INOVIA é um sistema avançado de segmentação de imagens que oferece múltiplos métodos de processamento para análise de medidas corporais sintéticas. O sistema combina algoritmos de deep learning (DeepLabV3) com métodos matemáticos otimizados (parametrização por funções indicadoras) para fornecer soluções flexíveis e de alta performance.
+O Projeto INOVIA é um sistema avançado de segmentação de imagens que oferece múltiplos métodos de processamento para análise de medidas corporais sintéticas. O sistema combina algoritmos de deep learning (DeepLabV3) com métodos matemáticos otimizados (parametrização por funções indicadoras) e agora inclui detecção automática de bounding boxes para localização precisa das regiões de interesse.
 
 ### 🎯 Características Principais
 
@@ -15,6 +15,7 @@ O Projeto INOVIA é um sistema avançado de segmentação de imagens que oferece
 - **⚡ Performance Extrema**: Otimizações NumPy com processamento 3-5x mais rápido
 - **🎛️ Flexibilidade Total**: Múltiplos métodos de segmentação (DeepLabV3 + Parametrização)
 - **📊 Análise Completa**: Segmentação por linhas, colunas e métodos combinados
+- **📦 Bounding Boxes**: Detecção automática de retângulos delimitadores nas silhuetas
 - **🖼️ Visualização Avançada**: Interface interativa com overlays especializados
 - **📈 Métricas Detalhadas**: Relatórios automáticos com estatísticas de qualidade
 
@@ -28,7 +29,8 @@ graph TD
     D --> E["v0.2.3<br/>⚡ Otimizações Avançadas"]
     E --> F["v0.3.0<br/>🔗 Extensão Completa"]
     F --> G["v0.4.0<br/>📊 Segmentação Multidimensional"]
-    G --> H["v0.5.0<br/>🧮 Analytics Avançados"]
+    G --> H["v0.5.0<br/>📦 Bounding Boxes"]
+    H --> I["v0.6.0<br/>🧮 Analytics Avançados"]
     
     A --> A1["✅ Validação CSV/Imagens"]
     A --> A2["✅ Estruturação por Gênero"]
@@ -342,6 +344,17 @@ graph TD
         SegmentDL --> Display
     end
     
+    subgraph "📦 Módulos Bounding Box"
+        BBox[📄 Bounding_box.py<br/>Detecção de Retângulos]
+        DisplayBBox[📄 exibicao_BBox_imagens.py<br/>Visualização BBoxes]
+        ExemploBBox[📄 exemplo_bounding_box.py<br/>Demonstração Completa]
+        
+        SegmentParam --> BBox
+        BBox --> DisplayBBox
+        BBox --> ExemploBBox
+        DisplayBBox --> ExemploBBox
+    end
+    
     subgraph "📊 Configuração e Dados"
         Requirements[📄 requirements.txt<br/>Dependências Python]
         README[📄 README.md<br/>Documentação]
@@ -356,6 +369,9 @@ graph TD
     classDef deeplab fill:#2196F3,stroke:#1976D2,color:#fff
     classDef param fill:#FF9800,stroke:#F57C00,color:#fff
     classDef visual fill:#9C27B0,stroke:#7B1FA2,color:#fff
+    classDef bbox fill:#E91E63,stroke:#C2185B,color:#fff
+    
+    class BBox,DisplayBBox,ExemploBBox bbox
     classDef config fill:#607D8B,stroke:#455A64,color:#fff
     
     class Main,Import,Choose main
@@ -1332,7 +1348,35 @@ resultado = segmentador.comparar_metodos("imagem.jpg")
 - Estatísticas de convergência por dimensão
 - Análise de distribuição de parâmetros
 
-### 🚀 Como Usar as Novas Funcionalidades v0.4.0
+### 🚀 Como Usar as Novas Funcionalidades v0.5.0
+
+#### 📦 Detecção de Bounding Boxes
+
+```python
+from segmentacao_imagens_parametrizacao_indicadora import SegmentacaoParametrizacaoIndicadora
+from Bounding_box import BoundingBoxDetector
+from exibicao_BBox_imagens import ExibicaoBBoxImagens
+
+# 1. Realizar segmentação com união de silhuetas
+segmentador = SegmentacaoParametrizacaoIndicadora()
+resultado = segmentador.segmentar_separado_e_unido("imagem.jpg")
+
+# 2. Detectar bounding boxes nas silhuetas
+detector = BoundingBoxDetector(area_minima=100, metodo_deteccao='contornos')
+bbox_resultado = detector.processar_resultado_segmentacao(resultado)
+
+# 3. Visualizar todas as bounding boxes
+visualizador = ExibicaoBBoxImagens()
+visualizador.visualizar_todas_bboxes(bbox_resultado)
+
+# 4. Foco na união das silhuetas
+visualizador.visualizar_sobreposicao(bbox_resultado, tipo_silhueta='uniao')
+
+# 5. Análise comparativa das bounding boxes
+visualizador.visualizar_comparativo_bboxes(bbox_resultado)
+```
+
+#### 📊 Segmentação Multidimensional v0.4.0
 
 ```python
 from segmentacao_imagens_parametrizacao_indicadora import SegmentacaoParametrizacaoIndicadora
@@ -1365,24 +1409,48 @@ analise_linhas = segmentador.analisar_convergencia_parametros(resultado_linhas, 
 analise_colunas = segmentador.analisar_convergencia_parametros(resultado_colunas, 'colunas')
 ```
 
-### 🏆 Marcos Alcançados v0.4.0
+### 🏆 Marcos Alcançados v0.5.0
 - ✅ **Base de dados robusta** e validação automática
 - ✅ **Quatro métodos de segmentação** com escolha interativa
 - ✅ **Segmentação multidimensional** com funções horizontais e verticais
 - ✅ **Segmentação separada + união** conforme especificação
+- ✅ **Detecção de bounding boxes** automática nas silhuetas
 - ✅ **Análise comparativa automática** entre todos os métodos
-- ✅ **Pipeline completa** dados → processamento → resultados → análise
+- ✅ **Visualização avançada** com sobreposições e métricas
+- ✅ **Pipeline completa** dados → processamento → detecção → visualização
 - ✅ **Qualidade enterprise** com logging e tratamento de erros
-- ✅ **Métricas expandidas** com MSE individual/combinado/comparativo
+- ✅ **Métricas expandidas** com MSE individual/combinado/comparativo + bounding boxes
 - ✅ **Vectorização NumPy mantida** com processamento 3-5x mais rápido
 - ✅ **Early stopping MSE** para otimização inteligente em todos os métodos
 - ✅ **Resolução aprimorada** de 512x382 para 1024x768
 - 🔄 **Próximo**: Analytics avançados e correlações automáticas
 
+### 📂 Arquivos Principais v0.5.0
+
+#### 🔬 Segmentação e Análise
+- 📄 **[segmentacao_imagens_parametrizacao_indicadora.py](segmentacao_imagens_parametrizacao_indicadora.py)** - Módulo principal com 4 métodos
+- 📄 **[exibicao_imagens_parametrizadas.py](exibicao_imagens_parametrizadas.py)** - Visualização especializada das segmentações
+
+#### 📦 Bounding Boxes (NOVO v0.5.0)
+- 📄 **[Bounding_box.py](Bounding_box.py)** - Detecção automática de retângulos delimitadores
+- 📄 **[exibicao_BBox_imagens.py](exibicao_BBox_imagens.py)** - Visualização avançada das bounding boxes
+- 📄 **[exemplo_bounding_box.py](exemplo_bounding_box.py)** - Demonstração completa do sistema
+
+#### 🧠 Deep Learning
+- 📄 **[modelo_segmentacao_Deeplabv3.py](modelo_segmentacao_Deeplabv3.py)** - Wrapper do modelo DeepLabV3
+- 📄 **[segmentacao_imagens_Deeplabv3.py](segmentacao_imagens_Deeplabv3.py)** - Engine de processamento
+
+#### 🎛️ Sistema de Controle
+- 📄 **[main.py](main.py)** - Coordenador principal do sistema
+- 📄 **[escolher_modelo.py](escolher_modelo.py)** - Interface de seleção de métodos
+- 📄 **[importa_dados.py](importa_dados.py)** - Gerenciamento de dados de entrada
+
 ### 🎯 Tecnologias Utilizadas
 - **🐍 Python 3.11+** - Linguagem principal
 - **🤖 PyTorch + Torchvision** - Deep Learning (DeepLabV3)
 - **⚡ NumPy Vectorizado** - Computação matemática otimizada (Parametrização v0.3.0)
+- **🖼️ OpenCV** - Processamento de imagens e detecção de contornos
+- **📊 Matplotlib** - Visualização avançada e gráficos comparativos
 - **🧮 SciPy + Scikit-learn** - Algoritmos científicos avançados
 - **🖼️ OpenCV** - Processamento de imagens
 - **📊 Pandas + Matplotlib** - Análise e visualização de dados

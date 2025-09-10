@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 PROJETO INOVIA - Sistema de Segmentação de Imagens
-Versão 0.2.3 - Otimizações Avançadas de Performance
+Versão x.x.x - Otimizações Avançadas de Performance
 
 Este é o módulo principal que coordena todo o fluxo de execução do projeto,
 desde a importação dos dados até o processamento final com os modelos de segmentação.

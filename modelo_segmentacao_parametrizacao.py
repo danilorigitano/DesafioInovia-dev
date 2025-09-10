@@ -602,6 +602,8 @@ class ModeloSegmentacaoParametrizacao:
         NOTA: Visualização agora delegada ao módulo exibicao_imagens_parametrizadas.py
         conforme separação de responsabilidades solicitada.
         
+        NOVO: Integração automática com detecção de bounding boxes
+        
         Args:
             num_amostras (int): Número de amostras a visualizar
             tipo_visualizacao (str): 'auto', 'simples', 'completo', 'metricas' ou '4_resultados'
@@ -628,6 +630,10 @@ class ModeloSegmentacaoParametrizacao:
                     # Adicionar informações de contexto
                     seg_result['variavel'] = variavel
                     seg_result['tipo_imagem'] = img_result['tipo_imagem']
+                    
+                    # 📦 NOVA FUNCIONALIDADE: Detectar bounding boxes automaticamente
+                    seg_result = self._processar_bounding_boxes(seg_result)
+                    
                     resultados_para_visualizar.append(seg_result)
             
             # Detectar automaticamente se deve usar visualização de 4 resultados
@@ -643,12 +649,143 @@ class ModeloSegmentacaoParametrizacao:
                 tipo_visualizacao
             )
             
+            # 🎨 NOVA FUNCIONALIDADE: Visualizar bounding boxes se disponíveis
+            self._visualizar_bounding_boxes(resultados_para_visualizar)
+            
         except ImportError as e:
             logger.warning(f"Módulo de visualização não disponível: {e}")
             print("❌ Módulo exibicao_imagens_parametrizadas não encontrado")
         except Exception as e:
             logger.error(f"Erro na visualização: {e}")
             print(f"❌ Erro na visualização: {e}")
+    
+    def _processar_bounding_boxes(self, resultado_segmentacao: Dict) -> Dict:
+        """
+        Processa bounding boxes para um resultado de segmentação.
+        
+        Args:
+            resultado_segmentacao (Dict): Resultado da segmentação
+            
+        Returns:
+            Dict: Resultado com bounding boxes adicionadas
+        """
+        try:
+            from Bounding_box import BoundingBoxDetector
+            
+            print("📦 Detectando bounding boxes...")
+            
+            # Inicializar detector de bounding boxes
+            detector = BoundingBoxDetector(area_minima=100, metodo_deteccao='contornos')
+            
+            # Detectar bounding boxes nas máscaras disponíveis
+            bounding_boxes_resultado = {}
+            
+            # Processar máscara binária principal
+            if 'mascara_binaria' in resultado_segmentacao:
+                bbox_result = detector.detectar_bounding_boxes(
+                    resultado_segmentacao['mascara_binaria'],
+                    resultado_segmentacao.get('imagem_original')
+                )
+                if bbox_result.get('sucesso', False):
+                    bounding_boxes_resultado['mascara_binaria'] = bbox_result
+                    print(f"✅ Bounding boxes detectadas: {len(bbox_result['bounding_boxes'])}")
+            
+            # Processar máscaras específicas para método combinado
+            if 'mascara_uniao_final' in resultado_segmentacao:
+                bbox_result = detector.detectar_bounding_boxes(
+                    resultado_segmentacao['mascara_uniao_final'],
+                    resultado_segmentacao.get('imagem_original')
+                )
+                if bbox_result.get('sucesso', False):
+                    bounding_boxes_resultado['mascara_uniao'] = bbox_result
+                    print(f"✅ Bounding boxes união detectadas: {len(bbox_result['bounding_boxes'])}")
+            
+            if 'mascara_linhas_final' in resultado_segmentacao:
+                bbox_result = detector.detectar_bounding_boxes(
+                    resultado_segmentacao['mascara_linhas_final'],
+                    resultado_segmentacao.get('imagem_original')
+                )
+                if bbox_result.get('sucesso', False):
+                    bounding_boxes_resultado['mascara_linhas'] = bbox_result
+                    print(f"✅ Bounding boxes linhas detectadas: {len(bbox_result['bounding_boxes'])}")
+            
+            if 'mascara_colunas_final' in resultado_segmentacao:
+                bbox_result = detector.detectar_bounding_boxes(
+                    resultado_segmentacao['mascara_colunas_final'],
+                    resultado_segmentacao.get('imagem_original')
+                )
+                if bbox_result.get('sucesso', False):
+                    bounding_boxes_resultado['mascara_colunas'] = bbox_result
+                    print(f"✅ Bounding boxes colunas detectadas: {len(bbox_result['bounding_boxes'])}")
+            
+            # Adicionar bounding boxes ao resultado
+            resultado_segmentacao['bounding_boxes'] = bounding_boxes_resultado
+            
+            return resultado_segmentacao
+            
+        except ImportError:
+            print("⚠️ Módulo Bounding_box não disponível - pulando detecção")
+            return resultado_segmentacao
+        except Exception as e:
+            print(f"⚠️ Erro na detecção de bounding boxes: {e}")
+            return resultado_segmentacao
+    
+    def _visualizar_bounding_boxes(self, resultados_para_visualizar: List[Dict]) -> None:
+        """
+        Visualiza bounding boxes dos resultados processados.
+        
+        Args:
+            resultados_para_visualizar (List[Dict]): Lista de resultados com bounding boxes
+        """
+        try:
+            from exibicao_BBox_imagens import ExibicaoBBoxImagens
+            
+            # Filtrar resultados que têm bounding boxes
+            resultados_com_bbox = [r for r in resultados_para_visualizar 
+                                 if 'bounding_boxes' in r and r['bounding_boxes']]
+            
+            if not resultados_com_bbox:
+                print("ℹ️ Nenhum resultado com bounding boxes para visualizar")
+                return
+            
+            print(f"\n📦 Visualizando bounding boxes para {len(resultados_com_bbox)} resultados...")
+            
+            # Inicializar visualizador de bounding boxes
+            visualizador_bbox = ExibicaoBBoxImagens()
+            
+            # Visualizar cada resultado
+            for i, resultado in enumerate(resultados_com_bbox[:3]):  # Limitar a 3 para não sobrecarregar
+                print(f"\n🖼️ Visualizando bounding boxes - {resultado.get('variavel', 'N/A')} {resultado.get('tipo_imagem', 'N/A')}")
+                
+                # Escolher a melhor máscara para visualização
+                bboxes = resultado['bounding_boxes']
+                
+                if 'mascara_uniao' in bboxes:
+                    # Priorizar união se disponível (método combinado)
+                    visualizador_bbox.visualizar_bbox_individual(
+                        bboxes['mascara_uniao'], 
+                        f"União - {resultado.get('variavel', 'N/A')}"
+                    )
+                elif 'mascara_binaria' in bboxes:
+                    # Usar máscara principal
+                    visualizador_bbox.visualizar_bbox_individual(
+                        bboxes['mascara_binaria'], 
+                        f"Segmentação - {resultado.get('variavel', 'N/A')}"
+                    )
+                
+                # Para método combinado, mostrar visualização comparativa
+                if self.metodo_segmentacao == 'combinado' and len(bboxes) > 1:
+                    try:
+                        visualizador_bbox.visualizar_comparativo_bboxes(bboxes)
+                    except Exception as e:
+                        print(f"⚠️ Erro na visualização comparativa: {e}")
+            
+            print("✅ Visualização de bounding boxes concluída!")
+            
+        except ImportError:
+            print("⚠️ Módulo exibicao_BBox_imagens não disponível")
+        except Exception as e:
+            print(f"⚠️ Erro na visualização de bounding boxes: {e}")
 
 # Exemplo de uso
 if __name__ == "__main__":
