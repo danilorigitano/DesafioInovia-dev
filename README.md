@@ -48,6 +48,133 @@ graph TD
     class F1,F2,F3 future
 ```
 
+## 🏗️ Arquitetura do Sistema
+
+### 📊 Fluxo Principal de Dados
+
+```mermaid
+flowchart TD
+    Start([🚀 Início do Sistema]) --> ValidData[📂 Validar Dados CSV/Imagens]
+    ValidData --> StructData[🏗️ Estruturar por Gênero/Posição]
+    StructData --> ChooseModel{🎛️ Escolher Modelo}
+    
+    ChooseModel -->|1️⃣| DeepLabV3[🧠 DeepLabV3 + ResNet101]
+    ChooseModel -->|2️⃣| Parametrizacao[📐 Parametrização v0.2.3]
+    
+    DeepLabV3 --> DLProcess[🎯 Segmentação Semântica<br/>PyTorch + GPU/CPU]
+    Parametrizacao --> ParamProcess[⚡ Vectorização NumPy<br/>382 Funções + Early Stop]
+    
+    DLProcess --> Results[📊 Processamento Completo]
+    ParamProcess --> Results
+    
+    Results --> Metrics[📈 Métricas de Qualidade]
+    Results --> Visualizations[🖼️ Visualizações Automáticas]
+    Results --> SaveJSON[💾 Salvar Resultados JSON]
+    
+    SaveJSON --> End([✅ Processamento Concluído])
+    
+    classDef start fill:#4CAF50,stroke:#2E7D32,color:#fff
+    classDef process fill:#2196F3,stroke:#1976D2,color:#fff
+    classDef decision fill:#FF9800,stroke:#F57C00,color:#fff
+    classDef model fill:#9C27B0,stroke:#7B1FA2,color:#fff
+    classDef output fill:#F44336,stroke:#C62828,color:#fff
+    
+    class Start,End start
+    class ValidData,StructData,Results,Metrics,Visualizations,SaveJSON process
+    class ChooseModel decision
+    class DeepLabV3,Parametrizacao,DLProcess,ParamProcess model
+```
+
+### 🎛️ Sistema de Escolha de Modelos
+
+```mermaid
+graph LR
+    subgraph "🎯 Interface de Seleção"
+        Menu[📋 Menu Interativo<br/>escolher_modelo.py]
+        User{👤 Escolha do Usuário}
+        Menu --> User
+    end
+    
+    subgraph "🧠 Pipeline DeepLabV3"
+        DL_Config[🔧 Configuração Automática]
+        DL_Model[ModeloSegmentacaoDeepLabV3]
+        DL_Engine[SegmentacaoDeepLabV3]
+        DL_Features[🎯 PyTorch + ResNet101<br/>📊 Alta Precisão<br/>⚙️ GPU/CPU Adaptativo]
+        
+        DL_Config --> DL_Model
+        DL_Model --> DL_Engine
+        DL_Engine --> DL_Features
+    end
+    
+    subgraph "📐 Pipeline Parametrização v0.2.3"
+        Param_Config[🔧 Configuração Otimizada]
+        Param_Model[ModeloSegmentacaoParametrizacao]
+        Param_Engine[SegmentacaoParametrizacaoIndicadora]
+        Param_Features[⚡ Vectorização NumPy<br/>🎯 Early Stopping MSE<br/>📦 Processamento em Batches]
+        
+        Param_Config --> Param_Model
+        Param_Model --> Param_Engine
+        Param_Engine --> Param_Features
+    end
+    
+    User -->|1️⃣ DeepLabV3| DL_Config
+    User -->|2️⃣ Parametrização| Param_Config
+    
+    DL_Features --> Results[📊 Resultados Unificados]
+    Param_Features --> Results
+    
+    classDef interface fill:#E1F5FE,stroke:#0277BD
+    classDef deeplab fill:#E8F5E8,stroke:#388E3C
+    classDef param fill:#FFF3E0,stroke:#F57C00
+    classDef output fill:#F3E5F5,stroke:#7B1FA2
+    
+    class Menu,User interface
+    class DL_Config,DL_Model,DL_Engine,DL_Features deeplab
+    class Param_Config,Param_Model,Param_Engine,Param_Features param
+    class Results output
+```
+
+### ⚡ Otimizações de Performance v0.2.3
+
+```mermaid
+sequenceDiagram
+    participant U as 👤 Usuário
+    participant M as 🎯 main.py
+    participant E as 🎛️ escolher_modelo.py
+    participant P as 📐 Parametrização
+    participant V as ⚡ Vectorização
+    
+    U->>M: python main.py
+    M->>M: 📋 Exibir cabeçalho v0.2.3
+    M->>M: 📂 Validar dados
+    M->>E: 🎛️ Inicializar modelo
+    
+    E->>U: 🎯 Menu de seleção
+    U->>E: 2️⃣ Parametrização (padrão)
+    E->>P: 🔧 Criar modelo otimizado
+    
+    M->>P: ⚡ Processar dataset
+    
+    loop Para cada imagem
+        P->>P: 📏 Redimensionar 512x382
+        P->>V: 🧮 Gerar 50 funções em batch
+        V->>V: ⚡ Processamento matricial
+        V->>P: 📊 MSE vectorizado
+        
+        alt MSE < 200
+            P->>P: ✅ Early stopping (Excelente)
+        else MSE < 300
+            P->>P: 🔄 Busca limitada (Bom)
+        else
+            P->>P: 🔍 Busca completa
+        end
+    end
+    
+    P->>M: 📈 Resultados + métricas
+    M->>M: 🖼️ Visualizar silhuetas
+    M->>U: ✅ Processamento concluído
+```
+
 ### ⚡ v0.2.3 - Otimizações Avançadas de Performance (ATUAL)
 O módulo de Parametrização recebeu **otimizações revolucionárias** para máxima velocidade!
 
@@ -90,6 +217,48 @@ graph LR
     class C,D,C1,D1 models
     class C2,C3,D2,E engines
     class D3,D4,D5 optimizations
+```
+
+### 📊 Comparação Detalhada de Métodos
+
+```mermaid
+graph TB
+    subgraph "🧠 DeepLabV3 + ResNet101"
+        DL1[🎯 Precisão Máxima<br/>⭐⭐⭐⭐⭐]
+        DL2[⏱️ ~15s por imagem<br/>🐌 Mais lento]
+        DL3[🖥️ GPU recomendada<br/>💻 CPU suportado]
+        DL4[🔬 Deep Learning<br/>🤖 PyTorch]
+        
+        DL1 --> DL2 --> DL3 --> DL4
+    end
+    
+    subgraph "📐 Parametrização v0.2.3"
+        P1[⚡ Velocidade Máxima<br/>⭐⭐⭐⭐⭐]
+        P2[⏱️ ~1-2s por imagem<br/>🚀 Ultra rápido]
+        P3[💻 CPU suficiente<br/>⚡ Otimizado]
+        P4[🧮 Funções Matemáticas<br/>📊 NumPy Vectorizado]
+        
+        P1 --> P2 --> P3 --> P4
+    end
+    
+    subgraph "🎯 Critérios de Escolha"
+        Choice1[🔬 Precisão Crítica → DeepLabV3]
+        Choice2[⚡ Processamento em Massa → Parametrização]
+        Choice3[🎛️ Balanceado → Ambos disponíveis]
+    end
+    
+    DL4 --> Choice1
+    P4 --> Choice2
+    Choice1 --> Choice3
+    Choice2 --> Choice3
+    
+    classDef deeplab fill:#E8F5E8,stroke:#388E3C
+    classDef param fill:#E3F2FD,stroke:#1976D2
+    classDef choice fill:#FFF3E0,stroke:#F57C00
+    
+    class DL1,DL2,DL3,DL4 deeplab
+    class P1,P2,P3,P4 param
+    class Choice1,Choice2,Choice3 choice
 ```
 
 **⚖️ Comparação de Métodos:**
@@ -405,6 +574,58 @@ gantt
     Dashboard Interativo :dash, after ui, 5d
     Testes Automatizados :test, after dash, 3d
     Deploy Produção     :deploy, after test, 5d
+```
+
+### 🔮 Visão de Estados do Projeto
+
+```mermaid
+stateDiagram-v2
+    state "📊 Fundação" as Foundation {
+        [*] --> DataValidation
+        DataValidation --> CSVProcessing
+        CSVProcessing --> ImageMatching
+        ImageMatching --> ReportGeneration
+        ReportGeneration --> [*]
+    }
+    
+    state "🖼️ Segmentação" as Segmentation {
+        [*] --> DeepLabV3Implementation
+        DeepLabV3Implementation --> PyTorchIntegration
+        PyTorchIntegration --> VisualizationTools
+        VisualizationTools --> [*]
+    }
+    
+    state "🎛️ Múltiplos Modelos" as MultiModel {
+        [*] --> ModelSelection
+        ModelSelection --> DeepLabV3Pipeline
+        ModelSelection --> ParametrizationPipeline
+        DeepLabV3Pipeline --> UnifiedResults
+        ParametrizationPipeline --> UnifiedResults
+        UnifiedResults --> [*]
+    }
+    
+    state "⚡ Otimizações v0.2.3" as Optimizations {
+        [*] --> VectorizationNumPy
+        VectorizationNumPy --> BatchProcessing
+        BatchProcessing --> EarlyStopping
+        EarlyStopping --> PerformanceGains
+        PerformanceGains --> [*]
+    }
+    
+    state "🔮 Futuro" as Future {
+        [*] --> Analytics
+        Analytics --> Correlations
+        Correlations --> WebInterface
+        WebInterface --> CloudDeploy
+        CloudDeploy --> [*]
+    }
+    
+    [*] --> Foundation
+    Foundation --> Segmentation
+    Segmentation --> MultiModel
+    MultiModel --> Optimizations
+    Optimizations --> Future
+    Future --> [*]
 ```
 
 ### 🎯 v0.3.0 - Analytics Avançados (Próximo)

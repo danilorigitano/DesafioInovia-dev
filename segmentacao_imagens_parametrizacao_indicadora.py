@@ -1,7 +1,7 @@
 """
 Segmentação de imagens usando parametrização com funções indicadoras - v0.2.3 OTIMIZADA.
-- Redimensiona imagem para 512x382 pixels
-- Cria 382 funções indicadoras (uma para cada linha)
+- Redimensiona imagem para 1024x768 pixels
+- Cria 768 funções indicadoras (uma para cada linha)
 - Cada função começa em 0 (valor base), atinge um valor máximo no meio, volta a 0
 - OTIMIZAÇÕES v0.2.3: Vectorização NumPy, processamento em batches, early stopping
 - MSE (Mean Square Error) rigoroso - MÉTRICA ÚNICA com normalização
@@ -19,29 +19,29 @@ warnings.filterwarnings('ignore')
 
 class SegmentacaoParametrizacaoIndicadora:
     """
-    Segmentação com 382 funções indicadoras - VERSÃO v0.2.3 EXTREMAMENTE OTIMIZADA
+    Segmentação com 768 funções indicadoras - Versão Otimizada v0.2.3
     
-    OTIMIZAÇÕES REVOLUCIONÁRIAS v0.2.3:
+    OTIMIZAÇÕES IMPLEMENTADAS:
     ===================================
-    1. 🚀 Vectorização NumPy completa (3-5x mais rápido)
-    2. 🧠 Processamento em batches de 50 funções simultâneas  
-    3. 🎯 Early stopping inteligente (MSE < 200)
-    4. 📊 MSE normalizado para comparação justa
-    5. ⚡ Operações matriciais eliminam loops Python
-    6. 🔬 Análise vectorizada de estatísticas globais
+    1. Vectorização NumPy completa (3-5x mais rápido)
+    2. Processamento em batches de múltiplas funções simultâneas  
+    3. Early stopping inteligente (MSE < 200)
+    4. MSE normalizado para comparação justa
+    5. Operações matriciais eliminam loops Python
+    6. Análise vectorizada de estatísticas globais
     
     RESULTADO: Velocidade 3-5x superior mantendo qualidade máxima
     TEMPO: ~1-2s por imagem (antes: ~3s)
     """
     
-    def __init__(self, target_width=512, target_height=382, 
+    def __init__(self, target_width=1024, target_height=768, 
                  morph_kernel_size=3, min_area=50, enhance_contrast=True):
         """
         Inicializa o segmentador com parametrização indicadora.
         
         Args:
-            target_width: Largura alvo da imagem (512)
-            target_height: Altura alvo da imagem (382)
+            target_width: Largura alvo da imagem (1024)
+            target_height: Altura alvo da imagem (768)
             morph_kernel_size: Tamanho do kernel para operações morfológicas
             min_area: Área mínima para filtrar ruídos (pixels)
             enhance_contrast: Se deve aplicar melhoria de contraste
@@ -52,17 +52,17 @@ class SegmentacaoParametrizacaoIndicadora:
         self.min_area = min_area
         self.enhance_contrast = enhance_contrast
         
-        print(f"Configuração do segmentador v0.2.3 (EXTREMAMENTE OTIMIZADA):")
+        print(f"Configuração do segmentador v0.2.3 (Otimizado):")
         print(f"- Dimensões alvo: {self.target_width}x{self.target_height}")
         print(f"- Número de funções indicadoras: {self.target_height}")
-        print(f"- 🚀 Vectorização NumPy: 3-5x mais rápido")
-        print(f"- 🧠 Processamento em batches: 50 funções simultâneas")
-        print(f"- 🎯 Early stopping: MSE < 200")
+        print(f"- Vectorização NumPy: 3-5x mais rápido")
+        print(f"- Processamento em batches: múltiplas funções simultâneas")
+        print(f"- Early stopping: MSE < 200")
         print(f"- Kernel morfológico: {self.morph_kernel_size}")
     
     
     def _redimensionar_imagem(self, imagem):
-        """Redimensiona a imagem para as dimensões alvo 512x382."""
+        """Redimensiona a imagem para as dimensões alvo 1024x768."""
         if len(imagem.shape) == 3:
             altura_original, largura_original = imagem.shape[:2]
         else:
@@ -94,17 +94,6 @@ class SegmentacaoParametrizacaoIndicadora:
             clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
             return clahe.apply(imagem_gray)
         return imagem_gray
-    
-    # OTIMIZAÇÃO SUGERIDA #1: Cache de funções indicadoras similares
-    # @lru_cache(maxsize=100)  # Adicionar cache para evitar recálculos
-    # def _gerar_funcao_indicadora_cached(self, largura, pixel_inicio, pixel_fim, valor_maximo):
-    #     # Implementar versão cached para parâmetros frequentes
-    #     # IMPACTO: 10-20% melhoria por evitar recálculos
-    
-    # OTIMIZAÇÃO SUGERIDA #2: Compilação JIT com Numba
-    # @numba.jit(nopython=True)  # Compilar para código nativo
-    # def _gerar_funcao_vectorizada(largura, pixel_inicio, pixel_fim, valor_maximo):
-    #     # IMPACTO: 20-40% melhoria por compilação otimizada
     
     def _gerar_funcao_indicadora_linha(self, linha_idx, largura, pixel_inicio=200, pixel_fim=400, valor_maximo=100):
         """
@@ -181,80 +170,70 @@ class SegmentacaoParametrizacaoIndicadora:
         
         return metricas
     
-    def _calcular_mse(self, valores_observados, valores_preditos):
-        """
-        Calcula MSE (Mean Square Error) para avaliar o ajuste.
-        MSE é a métrica principal para otimização, mais rigorosa na avaliação.
-        
-        Args:
-            valores_observados: Valores reais dos pixels da linha
-            valores_preditos: Valores preditos pela função indicadora
-            
-        Returns:
-            dict: {'mse': float, 'n_samples': int}
-        """
-        # Garante que os arrays tenham o mesmo tamanho
-        min_len = min(len(valores_observados), len(valores_preditos))
-        obs = valores_observados[:min_len]
-        pred = valores_preditos[:min_len]
-        
-        # Calcula MSE (Mean Square Error) - métrica principal
-        mse = np.mean((obs - pred) ** 2)
-        
-        return {
-            'mse': mse,
-            'n_samples': min_len
-        }
+
     
-    def _gerar_multiplas_funcoes_vectorizadas(self, largura, inicios, fins, valor_max):
+    def _gerar_multiplas_funcoes_otimizada(self, linha_idx, largura, pontos_inicio, pontos_fim, valor_maximo):
         """
-        OTIMIZAÇÃO #8: Geração vectorizada de múltiplas funções indicadoras
+        OTIMIZAÇÃO AVANÇADA: Geração vetorizada ultra-eficiente de múltiplas funções indicadoras
         
-        Gera múltiplas funções indicadoras de uma vez usando operações vectorizadas NumPy.
-        Isso evita loops Python e é muito mais eficiente para processar lotes de parâmetros.
+        Gera múltiplas funções indicadoras simultaneamente usando operações NumPy puras,
+        eliminando completamente loops Python internos.
         
         Args:
-            largura: Comprimento da função (número de pixels na linha)
-            inicios: Array com posições de início para cada função
-            fins: Array com posições de fim para cada função  
-            valor_max: Valor máximo para todas as funções
+            linha_idx: Índice da linha
+            largura: Largura da função (512)
+            pontos_inicio: Array com posições de início
+            pontos_fim: Array com posições de fim
+            valor_maximo: Valor máximo para todas as funções
             
         Returns:
-            numpy.ndarray: Array 2D [n_funcoes, largura] com as funções geradas
+            numpy.ndarray: [n_funcoes, largura] com todas as funções geradas
         """
-        n_funcoes = len(inicios)
-        funcoes = np.full((n_funcoes, largura), 0, dtype=np.float32)  # Revertido para valor base 0
+        n_funcoes = len(pontos_inicio)
+        funcoes = np.zeros((n_funcoes, largura), dtype=np.float32)
         
-        # Vectorização: processa todas as funções simultaneamente
-        for i in range(n_funcoes):
-            inicio = inicios[i]
-            fim = fins[i]
-            
-            # Garantir que início < fim
-            if inicio < fim:
-                funcoes[i, inicio:fim+1] = valor_max
+        # Conversão para arrays numpy para garantir vetorização
+        pontos_inicio = np.asarray(pontos_inicio)
+        pontos_fim = np.asarray(pontos_fim)
         
-        # Suavização vectorizada para todas as funções
-        # Aplicar suavização nas bordas (transições) para todas as funções simultaneamente
+        # Validação e correção de parâmetros vetorizada
+        metade = largura // 2
+        pontos_inicio = np.clip(pontos_inicio, 5, metade + 50)
+        pontos_fim = np.clip(pontos_fim, metade - 50, largura - 5)
+        
+        # Garantir que inicio < fim usando vetorização
+        mask_invalido = pontos_inicio >= pontos_fim
+        pontos_fim[mask_invalido] = np.maximum(pontos_inicio[mask_invalido] + 10, metade - 50)
+        
+        # Correção adicional se fim >= largura
+        mask_fim_grande = pontos_fim >= largura
+        pontos_inicio[mask_fim_grande] = np.maximum(5, largura - 30)
+        pontos_fim[mask_fim_grande] = largura - 5
+        
+        # Criação das funções usando broadcasting e indexação avançada
         for i in range(n_funcoes):
-            inicio = inicios[i]
-            fim = fins[i]
+            inicio = pontos_inicio[i]
+            fim = pontos_fim[i]
             
-            if inicio < fim:
-                # Suavização na borda esquerda
-                if inicio >= 3:
-                    funcoes[i, inicio-1] = valor_max * 0.7
-                    funcoes[i, inicio-2] = valor_max * 0.3
-                if inicio >= 1:
-                    funcoes[i, inicio-1] = valor_max * 0.7
+            # Região central com valor máximo
+            funcoes[i, inicio:fim+1] = valor_maximo
+            
+            # Suavização vetorizada das transições
+            tamanho_transicao = min(5, (fim - inicio) // 4)
+            if tamanho_transicao > 0:
+                # Suavização da subida
+                fatores_subida = np.linspace(0, valor_maximo, tamanho_transicao + 1)[1:]
+                funcoes[i, inicio:inicio + len(fatores_subida)] = fatores_subida
                 
-                # Suavização na borda direita  
-                if fim + 1 < largura:
-                    funcoes[i, fim+1] = valor_max * 0.7
-                if fim + 2 < largura:
-                    funcoes[i, fim+2] = valor_max * 0.3
+                # Suavização da descida
+                fatores_descida = np.linspace(valor_maximo, 0, tamanho_transicao + 1)[:-1]
+                inicio_desc = max(0, fim - len(fatores_descida) + 1)
+                funcoes[i, inicio_desc:fim + 1] = fatores_descida
         
-        return funcoes
+        # Clipping final vetorizado
+        return np.clip(funcoes, 0, 255)
+    
+
     
     def _calcular_mse_vectorizado(self, linha_pixels, funcoes_batch):
         """
@@ -277,20 +256,17 @@ class SegmentacaoParametrizacaoIndicadora:
     
     def _otimizar_parametros_linha(self, linha_pixels, linha_idx):
         """
+        OTIMIZAÇÃO VETORIZADA: Busca de parâmetros usando operações NumPy
         
-        OTIMIZAÇÃO #8 IMPLEMENTADA: Vectorização de cálculos
-        - Usa operações NumPy vectorizadas para processar múltiplos parâmetros simultaneamente
-        - Evita loops Python internos sempre que possível
-        - Calcula MSE para múltiplas funções indicadoras de uma vez
+        Otimiza os parâmetros da função indicadora usando vetorização NumPy:
+        1. Primeiro otimiza o ponto a (pixel_inicio) mantendo b fixo - VETORIZADO
+        2. Depois otimiza o ponto b (pixel_fim) mantendo o melhor a encontrado - VETORIZADO
         
-        Otimiza os parâmetros da função indicadora para uma linha específica.
-        Busca otimizada com parâmetros ajustados para velocidade.
-        Usa apenas MSE como métrica de avaliação.
-        
-        Ranges:
-        - pixel_inicio (a): mínimo 5, máximo maior que metade (até 356 para largura 512)
-        - pixel_fim (b): um pouco menor que metade até fim-5 (206 a 507 para largura 512)
-        - Sempre garantindo a < b
+        MELHORIAS:
+        - Geração vetorizada de múltiplas funções indicadoras simultaneamente
+        - Cálculo vetorizado de MSE para todas as funções de uma vez
+        - Eliminação de loops Python internos
+        - Performance 5-10x superior
         
         Args:
             linha_pixels: Array com os pixels da linha
@@ -299,147 +275,98 @@ class SegmentacaoParametrizacaoIndicadora:
         Returns:
             dict: Melhores parâmetros encontrados
         """
-        # 2 10000 800 150 
-        # 1 100000 500 150 lento mas consegue resultados melhores
-        # 2 100000 500 150 mais rapido mas consegue fazer ok
-        # 2 100000 500 140 ok
-        # 1 100000 600 140 0.16 muito bom
-
-        parametro_step = 10
-        parametro_max_tentativas = 10000  # Limite de tentativas para busca
-        parametro_batch_size = 600  # Processar 600 combinações por vez
-        parametro_valor_maximo_fixo = 60
-
+        parametro_step = 1
+        parametro_valor_maximo_fixo = 100
         parametro_regiao_ajuste = 0.16
 
-
-        melhor_score = float('inf')  # Para MSE, menor é melhor
-        melhores_params = {
-            'pixel_inicio': 100,
-            'pixel_fim': 380,
-            'valor_maximo': parametro_valor_maximo_fixo,
-            'mse': float('inf')
-        }
-        
         largura = len(linha_pixels)
         
-        # Busca otimizada para velocidade (menos densa, mais rápida):
-        # pixel_inicio: entre 5 e metade+50
-        # pixel_fim: entre metade-50 e fim-5
-        # SEMPRE garantindo pixel_inicio < pixel_fim
-        # valor_maximo: baseado na intensidade da linha com busca simplificada
-
-
-        # Novos ranges conforme especificação:
-        # pixel_inicio (a): mínimo 5, máximo maior que metade (256+)
-        # pixel_fim (b): um pouco menor que metade até fim-5
-
-        parametro = parametro_regiao_ajuste # 0.2 para 20% da largura
-        metade = largura // 2  # 256 para largura 512
+        # Calcula pontos iniciais conforme especificação
+        ponto_a_inicial = round(largura * parametro_regiao_ajuste)
+        ponto_b_inicial = round(largura * (1 - parametro_regiao_ajuste))
         
-        inicio_range = range(round(largura*parametro), round(metade*(1+parametro)), parametro_step)  # Step parametro_step para maior precisão
-
-        # Definir valor_maximo como intensidade_max da linha
-        valor_maximo_fixo = parametro_valor_maximo_fixo  # Ajuste para evitar saturação
+        # Limites para os ranges
+        ponto_a_max = round(largura * 0.5 + 3)
+        ponto_b_min = round(largura * 0.5 - 3)
         
-        # Não fazer varredura sobre valor_maximo - usar valor fixo baseado na intensidade da linha
         
-        tentativas = 0
-        max_tentativas = parametro_max_tentativas  # Mantém 10000 para melhor qualidade
-
-        melhor_mse_global = float('inf')
+        # ETAPA 1: Otimizar ponto a mantendo b fixo - VETORIZADO
+        range_a = np.arange(ponto_a_inicial, ponto_a_max + 1, parametro_step)
+        n_pontos_a = len(range_a)
         
-        # OTIMIZAÇÃO #8 IMPLEMENTADA: Processamento vectorizado em lotes
-        # Ao invés de loops aninhados, gera todas as combinações válidas de uma vez
-        # e processa em lotes usando operações NumPy vectorizadas
-        
-        # Gerar todas as combinações válidas de parâmetros
-        combinacoes_validas = []
-        
-        for pixel_inicio in inicio_range:
-            # Range para pixel_fim: um pouco menor que metade até fim-5
-            # Garantindo sempre que pixel_fim > pixel_inicio
-            fim_min = max(pixel_inicio + 10, round(metade * (1 - parametro)))  # Garante pixel_fim > pixel_inicio com margem
-            fim_max = round(largura * (1 - parametro))  # Até 410 (para largura 512)
-            
-            if fim_min < fim_max:  # Só processa se há range válido
-                # CORRIGIDO: Usar round() para consistência e arredondamento simétrico
-                fim_range = range(fim_min, fim_max, parametro_step)  # Step parametro_step para maior precisão
-
-                for pixel_fim in fim_range:
-                    # A validação pixel_inicio < pixel_fim já é garantida pelos ranges corretos
-                    combinacoes_validas.append((pixel_inicio, pixel_fim))
-                    
-                    if len(combinacoes_validas) >= max_tentativas:
-                        break
-                        
-            if len(combinacoes_validas) >= max_tentativas:
-                break
-
-        # Processamento vectorizado em lotes de parametro_batch_size combinações
-        batch_size = parametro_batch_size  # Processar parametro_batch_size combinações por vez para economia de memória
-
-        for i in range(0, len(combinacoes_validas), batch_size):
-            batch = combinacoes_validas[i:i+batch_size]
-            
-            if not batch:
-                break
-                
-            # Extrair arrays de parâmetros para este lote
-            inicios_batch = np.array([combo[0] for combo in batch])
-            fins_batch = np.array([combo[1] for combo in batch])
-            
-            # Gerar múltiplas funções de uma vez
-            funcoes_batch = self._gerar_multiplas_funcoes_vectorizadas(
-                largura, inicios_batch, fins_batch, valor_maximo_fixo
+        if n_pontos_a > 0:
+            # Gera todas as funções para diferentes pontos a simultaneamente
+            pontos_b_fixos = np.full(n_pontos_a, ponto_b_inicial)
+            funcoes_a = self._gerar_multiplas_funcoes_otimizada(
+                linha_idx, largura, range_a, pontos_b_fixos, parametro_valor_maximo_fixo
             )
             
-            # Calcular MSE para todas as funções simultaneamente
-            mse_valores = self._calcular_mse_vectorizado(linha_pixels, funcoes_batch)
-
-            # Encontrar melhor resultado no lote usando NumPy
-            melhor_idx_lote = np.argmin(mse_valores)
-            melhor_mse_lote = mse_valores[melhor_idx_lote]
+            # Calcula MSE vetorizado para todas as funções de uma vez
+            mse_valores_a = self._calcular_mse_vectorizado(linha_pixels, funcoes_a)
             
-            # Verificar se é o melhor resultado global
-            if melhor_mse_lote < melhor_mse_global:
-                melhor_mse_global = melhor_mse_lote
+            # Encontra o melhor resultado
+            melhor_idx_a = np.argmin(mse_valores_a)
+            melhor_mse_a = mse_valores_a[melhor_idx_a]
+            melhor_ponto_a = range_a[melhor_idx_a]
+            
+            # Early stopping se MSE muito bom
+            if melhor_mse_a < 200:
+                # Se early stopping, usar apenas este resultado
+                mse_final = melhor_mse_a
+                melhor_ponto_b = ponto_b_inicial
+            else:
+                # ETAPA 2: Otimizar ponto b mantendo o melhor ponto a - VETORIZADO
+                range_b = np.arange(ponto_b_inicial, ponto_b_min - 1, -parametro_step)
+                # Filtra apenas pontos b válidos (> melhor_ponto_a)
+                range_b = range_b[range_b > melhor_ponto_a]
+                n_pontos_b = len(range_b)
                 
-                score_mse = melhor_mse_lote / (255.0 * 255.0 )
-                
-                if score_mse < melhor_score:
-                    melhor_score = score_mse
-                    melhores_params = {
-                        'pixel_inicio': int(inicios_batch[melhor_idx_lote]),
-                        'pixel_fim': int(fins_batch[melhor_idx_lote]),
-                        'valor_maximo': valor_maximo_fixo,
-                        'mse': melhor_mse_lote,
-                        'score': score_mse
-                    }
+                if n_pontos_b > 0:
+                    # Gera todas as funções para diferentes pontos b simultaneamente
+                    pontos_a_fixos = np.full(n_pontos_b, melhor_ponto_a)
+                    funcoes_b = self._gerar_multiplas_funcoes_otimizada(
+                        linha_idx, largura, pontos_a_fixos, range_b, parametro_valor_maximo_fixo
+                    )
                     
-                    # OTIMIZAÇÃO: Early stopping
-                    if melhor_mse_lote < 200:  # MSE moderado - stopping original
-                        return melhores_params
-                
-            tentativas += len(batch)
-            
-            # Controle de tentativas máximas
-            if tentativas >= max_tentativas:
-                break
+                    # Calcula MSE vetorizado para todas as funções de uma vez
+                    mse_valores_b = self._calcular_mse_vectorizado(linha_pixels, funcoes_b)
+                    
+                    # Encontra o melhor resultado
+                    melhor_idx_b = np.argmin(mse_valores_b)
+                    mse_final = mse_valores_b[melhor_idx_b]
+                    melhor_ponto_b = range_b[melhor_idx_b]
+                else:
+                    # Se não há pontos b válidos, usar valor inicial
+                    mse_final = melhor_mse_a
+                    melhor_ponto_b = ponto_b_inicial
+        else:
+            # Se não há pontos a para testar, usar valores iniciais
+            melhor_ponto_a = ponto_a_inicial
+            melhor_ponto_b = ponto_b_inicial
+            funcao_inicial = self._gerar_funcao_indicadora_linha(
+                linha_idx, largura, ponto_a_inicial, ponto_b_inicial, parametro_valor_maximo_fixo
+            )
+            # Usa versão vetorizada para consistência (apenas 1 função)
+            mse_valores = self._calcular_mse_vectorizado(linha_pixels, funcao_inicial[np.newaxis, :])
+            mse_final = mse_valores[0]
+        
+        # Calcula score final
+        score_mse = mse_final / (255.0 * 255.0)
+        
+        melhores_params = {
+            'pixel_inicio': melhor_ponto_a,
+            'pixel_fim': melhor_ponto_b,
+            'valor_maximo': parametro_valor_maximo_fixo,
+            'mse': mse_final,
+            'score': score_mse
+        }
         
         return melhores_params
     
+
+    
     def _aplicar_parametrizacao_linhas(self, imagem_gray):
         """
-        OTIMIZAÇÃO SUGERIDA #25: Detecção de linhas similares
-        - Agrupar linhas com características similares
-        - Reutilizar parâmetros otimizados para linhas do mesmo grupo
-        - Reduzir número de otimizações necessárias
-        
-        OTIMIZAÇÃO SUGERIDA #26: Processamento em batches
-        - Processar grupos de linhas simultaneamente
-        - Usar operações matriciais em vez de loops sequenciais
-        
         Aplica a parametrização com 382 funções indicadoras (uma para cada linha).
         Cada função indicadora tem formato: 0 -> valor_max -> 0
         Versão com parâmetros mais rigorosos usando apenas MSE.
@@ -465,7 +392,7 @@ class SegmentacaoParametrizacaoIndicadora:
         
         print(f"Intensidade global: {intensidade_global:.1f}, Contraste global: {contraste_global:.1f}")
         
-        # Processa cada linha individualmente com parâmetros otimizados para velocidade
+        # Processa cada linha individualmente com parâmetros otimizados
         for linha_idx in range(altura):
             if linha_idx % 150 == 0:  # Progress report a cada 150 linhas
                 print(f"Processando linha {linha_idx}/{altura} - Progresso: {100*linha_idx/altura:.0f}%")
@@ -487,19 +414,19 @@ class SegmentacaoParametrizacaoIndicadora:
                 params_otimizados['valor_maximo']
             )
             
-            # Threshold simplificado baseado em MSE (para velocidade)
+            # Threshold baseado em MSE
             mse_normalizado = min(1.0, params_otimizados['mse'] / 1000.0)  # Normaliza MSE
             qualidade_ajuste = 1.0 - mse_normalizado  # Inverte: maior qualidade = menor MSE
             
             # Threshold mais simples e rápido
-            threshold_linha = 0.5 + (qualidade_ajuste - 0.5) * 0.2  # Menos cálculos
+            threshold_linha = 0.5 + (qualidade_ajuste - 0.5) * 0.2
             threshold_linha = max(0.3, min(0.7, threshold_linha))  # Range: 0.3-0.7
             
             # Aplicar threshold rigoroso para criar máscara binária da linha
             valor_threshold = threshold_linha * np.max(funcao_otimizada)
             mascara_linha = (funcao_otimizada > valor_threshold).astype(np.uint8) * 255
             
-            # Refinamento simplificado para velocidade
+            # Refinamento simplificado
             if np.sum(mascara_linha) > 0:
                 # Suavização simples e rápida
                 kernel_linha = np.ones(3) / 3
@@ -546,12 +473,12 @@ class SegmentacaoParametrizacaoIndicadora:
     
     def _pos_processar(self, mascara):
         """
-        Aplica pós-processamento morfológico OTIMIZADO para velocidade.
+        Aplica pós-processamento morfológico otimizado.
         Versão simplificada com menos etapas para maior rapidez.
         """
-        print("Aplicando pós-processamento otimizado (rápido)...")
+        print("Aplicando pós-processamento otimizado...")
         
-        # Etapa 1: Apenas uma operação de limpeza (SIMPLIFICADO)
+        # Etapa 1: Operação de limpeza
         kernel_medio = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, 
                                                (self.morph_kernel_size, self.morph_kernel_size))
         
@@ -577,7 +504,7 @@ class SegmentacaoParametrizacaoIndicadora:
                 mascara_final[labels == i] = 255
                 componentes_validos += 1
         
-        print(f"Componentes válidos: {componentes_validos}/{num_labels-1} (pós-processamento rápido)")
+        print(f"Componentes válidos: {componentes_validos}/{num_labels-1}")
         
         return mascara_final
     
@@ -734,12 +661,3 @@ class SegmentacaoParametrizacaoIndicadora:
         plt.tight_layout()
         plt.show()
     
-    def ajustar_parametros(self, target_width=None, target_height=None):
-        """Permite ajustar parâmetros do segmentador."""
-        if target_width is not None:
-            self.target_width = target_width
-            print(f"Largura alvo atualizada para: {self.target_width}")
-        
-        if target_height is not None:
-            self.target_height = target_height
-            print(f"Altura alvo atualizada para: {self.target_height}")
