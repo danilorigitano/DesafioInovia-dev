@@ -111,7 +111,45 @@ class ModeloSegmentacaoParametrizacao:
             logger.info("✓ Segmentador inicializado com sucesso")
             
         except Exception as e:
-            logger.error(f"✗ Erro ao inicializar segmentador: {e}")
+            logger.error(f"❌ Erro na visualização de bounding boxes: {e}")
+
+
+    def _exportar_variavel_individual(self, resultado_variavel: Dict) -> None:
+        """
+        Exporta os dados de uma variável individual imediatamente após processamento.
+        
+        Args:
+            resultado_variavel (Dict): Dados de resultado de uma variável processada
+        """
+        try:
+            # Importar o exportador apenas quando necessário
+            from exportacao_parametrizacao import ExportadorParametrizacao
+            
+            variavel_id = resultado_variavel.get('variavel', '')
+            
+            # Verificar se a variável foi processada com sucesso
+            if not resultado_variavel.get('sucesso', False):
+                logger.debug(f"⚠️ Variável {variavel_id} não processada com sucesso - pulando exportação")
+                return
+            
+            # Inicializar exportador
+            exportador = ExportadorParametrizacao()
+            
+            # Exportar dados da variável
+            sucesso = exportador.exportar_variavel_completa(resultado_variavel, mostrar_log=False)
+            
+            if sucesso:
+                logger.info(f"✅ Dados de {variavel_id} exportados para TXT")
+            else:
+                logger.warning(f"⚠️ Falha ao exportar dados de {variavel_id}")
+                
+        except ImportError:
+            logger.debug("⚠️ Módulo de exportação não disponível")
+        except Exception as e:
+            logger.warning(f"⚠️ Erro na exportação de {resultado_variavel.get('variavel', 'N/A')}: {e}")
+
+
+# Exemplo de uso
             raise RuntimeError(f"Falha na inicialização do segmentador: {e}")
     
     def _validar_dataframe(self):
@@ -204,6 +242,12 @@ class ModeloSegmentacaoParametrizacao:
                 mascara_binaria = resultado_segmentacao.get('mascara_binaria')
                 estatisticas_mascara = self._calcular_estatisticas_mascara(mascara_binaria) if mascara_binaria is not None else {}
                 
+                # 🎯 NOVA FUNCIONALIDADE: Criar bounding box logo após a execução das silhuetas
+                bounding_box_dados = self._processar_bounding_box(resultado_segmentacao, variavel, tipo_imagem)
+                
+                # 💾 SALVAR IMEDIATAMENTE: Arquivo de bounding box específico para este tipo de foto
+                self._salvar_bounding_box_imediato(bounding_box_dados, variavel, tipo_imagem)
+                
                 return {
                     'variavel': variavel,
                     'tipo_imagem': tipo_imagem,
@@ -211,6 +255,7 @@ class ModeloSegmentacaoParametrizacao:
                     'sucesso': True,
                     'tempo_processamento': tempo_processamento,
                     'resultado_segmentacao': resultado_segmentacao,
+                    'bounding_box_dados': bounding_box_dados,  # ✨ Adicionar dados do bounding box
                     'metricas_qualidade': {
                         'mse_global': mse_global,
                         'rms_global': rms_global,
@@ -319,6 +364,145 @@ class ModeloSegmentacaoParametrizacao:
             logger.warning(f"Erro ao calcular estatísticas da máscara: {e}")
             return {}
     
+    def _processar_bounding_box(self, resultado_segmentacao: Dict, variavel: str, tipo_imagem: str) -> Dict:
+        """
+        Processa bounding box para o resultado da segmentação.
+        
+        Args:
+            resultado_segmentacao (Dict): Resultado da segmentação
+            variavel (str): ID da variável
+            tipo_imagem (str): Tipo da imagem ('front' ou 'left')
+            
+        Returns:
+            Dict: Dados do bounding box processado
+        """
+        try:
+            logger.debug(f"🎯 Processando bounding box para {variavel} - {tipo_imagem}")
+            
+            # Importar o detector de bounding box
+            from Bounding_box import BoundingBoxDetector
+            
+            # Inicializar detector
+            detector = BoundingBoxDetector(area_minima=100, metodo_deteccao='contornos')
+            
+            # Determinar qual máscara usar baseado no método de segmentação
+            mascara_para_bbox = None
+            
+            if self.metodo_segmentacao == "combinado":
+                # Para método combinado, usar a máscara de união final
+                mascara_para_bbox = resultado_segmentacao.get('mascara_uniao_final')
+                if mascara_para_bbox is None:
+                    # Fallback para máscara binária padrão
+                    mascara_para_bbox = resultado_segmentacao.get('mascara_binaria')
+            else:
+                # Para métodos de linhas ou colunas, usar máscara binária
+                mascara_para_bbox = resultado_segmentacao.get('mascara_binaria')
+            
+            if mascara_para_bbox is None:
+                logger.warning(f"Nenhuma máscara disponível para bounding box - {variavel} {tipo_imagem}")
+                return {'sucesso': False, 'erro': 'Máscara não encontrada'}
+            
+            # Detectar bounding boxes
+            bbox_resultado = detector.detectar_bounding_boxes(
+                mascara_para_bbox, 
+                resultado_segmentacao.get('imagem_redimensionada')
+            )
+            
+            if bbox_resultado.get('sucesso', False):
+                logger.info(f"✅ Bounding box detectado para {variavel} - {tipo_imagem}: {len(bbox_resultado.get('bounding_boxes', []))} caixas")
+                
+                # Incluir informações do tipo de imagem
+                bbox_resultado['variavel'] = variavel
+                bbox_resultado['tipo_imagem'] = tipo_imagem
+                
+                return bbox_resultado
+            else:
+                logger.warning(f"❌ Falha na detecção de bounding box para {variavel} - {tipo_imagem}")
+                return {'sucesso': False, 'erro': bbox_resultado.get('erro', 'Detecção falhou')}
+                
+        except Exception as e:
+            logger.error(f"Erro no processamento de bounding box para {variavel} - {tipo_imagem}: {e}")
+            return {'sucesso': False, 'erro': str(e)}
+    
+    def _salvar_bounding_box_imediato(self, bounding_box_dados: Dict, variavel: str, tipo_imagem: str) -> bool:
+        """
+        Salva imediatamente o arquivo de bounding box no formato solicitado.
+        
+        Args:
+            bounding_box_dados (Dict): Dados do bounding box
+            variavel (str): ID da variável
+            tipo_imagem (str): Tipo da imagem ('front' ou 'left')
+            
+        Returns:
+            bool: True se salvou com sucesso
+        """
+        try:
+            if not bounding_box_dados.get('sucesso', False):
+                logger.debug(f"⚠️ Bounding box sem sucesso para {variavel} - {tipo_imagem}, não salvando arquivo")
+                return False
+            
+            # Manter o ID original sem remover prefixos
+            # Isso evita duplicação de arquivos já que syn_f000000-0-Pre e 000000-0-Pre 
+            # devem gerar arquivos diferentes
+            id_limpo = variavel
+            
+            # Criar nome do arquivo no formato: id--tipodefoto--boundingbox.txt
+            nome_arquivo = f"{id_limpo}--{tipo_imagem}--boundingbox.txt"
+            
+            # Definir pasta de dados analisados
+            pasta_dados = Path(__file__).parent / "dados_analisados"
+            pasta_dados.mkdir(exist_ok=True)
+            
+            caminho_arquivo = pasta_dados / nome_arquivo
+            
+            # Extrair bounding boxes
+            bboxes = bounding_box_dados.get('bounding_boxes', [])
+            
+            if not bboxes:
+                logger.warning(f"⚠️ Nenhuma bounding box para salvar - {variavel} {tipo_imagem}")
+                return False
+            
+            # Salvar arquivo com coordenadas dos 4 pontos
+            with open(caminho_arquivo, 'w', encoding='utf-8') as f:
+                # Cabeçalho
+                f.write(f"# Bounding Box - {nome_arquivo}\n")
+                f.write(f"# Variável: {variavel}\n")
+                f.write(f"# Tipo de Foto: {tipo_imagem}\n")
+                f.write(f"# Total de bounding boxes: {len(bboxes)}\n")
+                f.write(f"# Formato: x\ty (coordenadas dos 4 cantos do retângulo)\n")
+                f.write(f"# Para cada bbox: canto_superior_esquerdo, superior_direito, inferior_direito, inferior_esquerdo\n")
+                f.write("#" + "="*70 + "\n\n")
+                
+                # Dados das bounding boxes - converter para coordenadas dos 4 cantos
+                for i, bbox in enumerate(bboxes):
+                    if isinstance(bbox, (list, tuple)) and len(bbox) >= 4:
+                        x, y, w, h = bbox[0], bbox[1], bbox[2], bbox[3]
+                        
+                        # Calcular as 4 coordenadas dos cantos do retângulo
+                        # Canto superior esquerdo
+                        x1, y1 = x, y
+                        # Canto superior direito  
+                        x2, y2 = x + w, y
+                        # Canto inferior direito
+                        x3, y3 = x + w, y + h
+                        # Canto inferior esquerdo
+                        x4, y4 = x, y + h
+                        
+                        # Escrever as 4 coordenadas dos cantos (formato x \t y)
+                        f.write(f"# Bounding Box {i+1}\n")
+                        f.write(f"{x1}\t{y1}\n")  # Superior esquerdo
+                        f.write(f"{x2}\t{y2}\n")  # Superior direito
+                        f.write(f"{x3}\t{y3}\n")  # Inferior direito
+                        f.write(f"{x4}\t{y4}\n")  # Inferior esquerdo
+                        f.write("\n")  # Linha em branco entre bounding boxes
+            
+            logger.info(f"✅ Bounding box salvo: {nome_arquivo} ({len(bboxes)} caixas)")
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ Erro ao salvar bounding box para {variavel} - {tipo_imagem}: {e}")
+            return False
+    
     def processar_variavel(self, variavel: str) -> Dict:
         """
         Processa todas as imagens de uma variável específica
@@ -382,9 +566,61 @@ class ModeloSegmentacaoParametrizacao:
             'metricas_resumo': metricas_resumo
         }
         
+        # 🎨 NOVA FUNCIONALIDADE: Exibir figuras com bounding box imediatamente após processamento
+        if sucesso_geral:
+            self._exibir_figuras_com_bounding_box(resultado_variavel)
+        
         logger.info(f"✓ Variável {variavel}: {resultado_variavel['imagens_sucesso']}/{resultado_variavel['total_imagens']} imagens processadas (MSE: {metricas_resumo['mse_medio']:.3f}, RMS: {metricas_resumo['rms_medio']:.3f})")
         
         return resultado_variavel
+    
+    def _exibir_figuras_com_bounding_box(self, resultado_variavel: Dict) -> None:
+        """
+        Exibe figuras com bounding boxes imediatamente após o processamento da variável.
+        
+        Args:
+            resultado_variavel (Dict): Resultado do processamento da variável
+        """
+        try:
+            logger.info(f"🎨 Exibindo figuras com bounding box para {resultado_variavel.get('variavel', 'N/A')}")
+            
+            # Importar visualizador se disponível
+            try:
+                from exibicao_BBox_imagens import ExibicaoBBoxImagens
+                visualizador = ExibicaoBBoxImagens()
+            except ImportError:
+                logger.warning("⚠️ Módulo de exibição de bounding box não disponível")
+                return
+            
+            # Processar cada imagem da variável
+            for resultado_imagem in resultado_variavel.get('resultados_imagens', []):
+                if not resultado_imagem.get('sucesso', False):
+                    continue
+                
+                variavel = resultado_imagem.get('variavel', 'N/A')
+                tipo_imagem = resultado_imagem.get('tipo_imagem', 'N/A')
+                bounding_box_dados = resultado_imagem.get('bounding_box_dados', {})
+                
+                if not bounding_box_dados.get('sucesso', False):
+                    logger.debug(f"⚠️ Sem bounding box para exibir - {variavel} {tipo_imagem}")
+                    continue
+                
+                # Exibir figura com bounding box
+                titulo = f"Bounding Box - {variavel} ({tipo_imagem})"
+                logger.info(f"📺 Exibindo: {titulo}")
+                
+                try:
+                    visualizador.visualizar_bbox_individual(bounding_box_dados, titulo)
+                    
+                    # Pequena pausa para visualização
+                    import time
+                    time.sleep(1)
+                    
+                except Exception as e:
+                    logger.warning(f"⚠️ Erro na exibição de {titulo}: {e}")
+            
+        except Exception as e:
+            logger.warning(f"⚠️ Erro na exibição geral de figuras com bounding box: {e}")
     
     def processar_dataset(self, limite_registros: Optional[int] = None,
                          exibir_progresso: bool = True) -> Dict:
@@ -420,6 +656,9 @@ class ModeloSegmentacaoParametrizacao:
             
             resultado_variavel = self.processar_variavel(variavel)
             self.resultados.append(resultado_variavel)
+            
+            # 💾 EXPORTAÇÃO IMEDIATA: Salvar dados da variável processada
+            self._exportar_variavel_individual(resultado_variavel)
         
         # Calcular estatísticas globais
         tempo_total = time.time() - inicio_tempo_total

@@ -1,23 +1,279 @@
-# Projeto INOVIA 🚀
+# 🚀 Projeto INOVIA - Sistema de Segmentação Inteligente
 
-Sistema modular para processamento e análise de dados de imagens sintéticas com medidas corporais.
+Sistema modular avançado para processamento e análise de dados de imagens sintéticas com medidas corporais, integrando deep learning e métodos matemáticos otimizados.
 
-🚀 **Versão 0.5.0** - Detecção de Bounding Boxes nas Silhuetas!  
-📋 [Ver CHANGELOG.md](CHANGELOG.md) para histórico detalhado
+```mermaid
+graph LR
+    A[�️ Imagens Sintéticas] --> B[🧠 Processamento IA]
+    B --> C[📊 Análise Corporal]
+    C --> D[📋 Relatórios]
+    
+    B --> B1[DeepLabV3]
+    B --> B2[Parametrização]
+    B --> B3[Bounding Boxes]
+    
+    style A fill:#e1f5fe
+    style B fill:#f3e5f5
+    style C fill:#e8f5e8
+    style D fill:#fff3e0
+```
 
-## 📋 Visão Geral
+�🚀 **Versão 0.5.0** - Detecção de Bounding Boxes nas Silhuetas!  
+📋 [Ver CHANGELOG.md](CHANGELOG.md) para histórico completo de desenvolvimento
 
-O Projeto INOVIA é um sistema avançado de segmentação de imagens que oferece múltiplos métodos de processamento para análise de medidas corporais sintéticas. O sistema combina algoritmos de deep learning (DeepLabV3) com métodos matemáticos otimizados (parametrização por funções indicadoras) e agora inclui detecção automática de bounding boxes para localização precisa das regiões de interesse.
+## 📋 Visão Geral do Sistema
+
+O Projeto INOVIA é uma solução completa e inovadora para segmentação e análise de imagens corporais sintéticas, oferecendo:
+
+- **🧠 Inteligência Artificial Avançada**: Integração de DeepLabV3 com ResNet101 para segmentação semântica de alta precisão
+- **📐 Métodos Matemáticos Otimizados**: Algoritmos de parametrização por funções indicadoras com 4 abordagens especializadas
+- **📦 Detecção Automática de Regiões**: Sistema de bounding boxes para localização precisa das áreas de interesse
+- **⚡ Performance Extrema**: Otimizações NumPy com processamento 3-5x mais rápido e early stopping inteligente
+- **📊 Análise Comparativa**: Métricas detalhadas e visualizações especializadas para cada método
 
 ### 🎯 Características Principais
 
+```mermaid
+mindmap
+    root((🚀 INOVIA))
+        🔬 Precisão Científica
+            Algoritmos Validados
+            MSE < 200
+            Métricas Rigorosas
+        ⚡ Performance Extrema
+            Vectorização NumPy
+            3-5x Velocidade
+            Early Stopping
+        🎛️ Flexibilidade Total
+            DeepLabV3
+            4 Métodos Parametrização
+            Escolha Inteligente
+        📊 Análise Completa
+            Segmentação Multidimensional
+            Métodos Combinados
+            Relatórios Automáticos
+        📦 Bounding Boxes
+            Detecção Automática
+            Localização Precisa
+            Métricas Detalhadas
+        🖼️ Visualização Avançada
+            Interface Interativa
+            Overlays Especializados
+            Análise Comparativa
+```
+
 - **🔬 Precisão Científica**: Algoritmos validados com métricas rigorosas (MSE < 200)
 - **⚡ Performance Extrema**: Otimizações NumPy com processamento 3-5x mais rápido
-- **🎛️ Flexibilidade Total**: Múltiplos métodos de segmentação (DeepLabV3 + Parametrização)
+- **🎛️ Flexibilidade Total**: Múltiplos métodos de segmentação (DeepLabV3 + 4 Parametrizações)
 - **📊 Análise Completa**: Segmentação por linhas, colunas e métodos combinados
 - **📦 Bounding Boxes**: Detecção automática de retângulos delimitadores nas silhuetas
 - **🖼️ Visualização Avançada**: Interface interativa com overlays especializados
 - **📈 Métricas Detalhadas**: Relatórios automáticos com estatísticas de qualidade
+
+## 🚀 Instalação e Configuração
+
+### 📋 Pré-requisitos do Sistema
+
+```mermaid
+graph TD
+    subgraph "💻 Ambiente Base"
+        A[🐍 Python 3.8+]
+        B[💾 8GB RAM mínimo]
+        C[📁 2GB espaço disco]
+        D[🖥️ CPU Multi-core]
+    end
+    
+    subgraph "🎮 GPU (Opcional)"
+        E[🚀 NVIDIA GPU]
+        F[⚡ CUDA 11.0+]
+        G[📊 4GB VRAM]
+        H[🔧 cuDNN]
+    end
+    
+    subgraph "📚 Dependências Python"
+        I[📊 NumPy 1.21+]
+        J[🧠 PyTorch 2.0+]
+        K[🖼️ OpenCV 4.5+]
+        L[📈 Matplotlib 3.5+]
+        M[📋 Pandas 1.3+]
+    end
+    
+    A --> I
+    B --> J
+    C --> K
+    D --> L
+    E --> F
+    F --> G
+    G --> H
+    
+    style A fill:#306998,color:#fff
+    style E fill:#76b900,color:#fff
+    style I fill:#4dabf7,color:#fff
+```
+
+### ⚡ Instalação Rápida
+
+```bash
+# 1. Clone o repositório
+git clone https://github.com/danilorigitano/DesafioInovia-dev.git
+cd DesafioInovia-dev
+
+# 2. Instale as dependências
+pip install -r requirements.txt
+
+# 3. Execute o sistema
+python main.py
+```
+
+### 🔧 Configuração Avançada
+
+```mermaid
+flowchart LR
+    subgraph "📦 Dependências Principais"
+        A[🐍 torch>=2.0.0]
+        B[🖼️ torchvision>=0.15.0]
+        C[📊 numpy>=1.21.0]
+        D[🎨 opencv-python>=4.5.0]
+        E[📈 matplotlib>=3.5.0]
+        F[📋 pandas>=1.3.0]
+        G[🔬 scipy>=1.7.0]
+        H[🎨 Pillow>=8.3.0]
+    end
+    
+    subgraph "⚙️ Configuração GPU"
+        I[🔍 Detectar CUDA]
+        J[📥 Instalar PyTorch GPU]
+        K[⚡ Configurar cuDNN]
+        L[✅ Validar instalação]
+    end
+    
+    A --> I
+    B --> J
+    I --> J
+    J --> K
+    K --> L
+    
+    style A fill:#ee4c2c,color:#fff
+    style I fill:#76b900,color:#fff
+```
+
+### 📁 Estrutura de Dados Necessária
+
+```mermaid
+graph TD
+    subgraph "📂 Estrutura Obrigatória"
+        A[📁 projeto_raiz/]
+        A --> B[📄 medidas_dados_sinteticos.csv]
+        A --> C[📁 INOVIA_IMAGENS/]
+        
+        C --> D[📁 syn_fXXXXXX-X-Pre/]
+        C --> E[📁 syn_fXXXXXX-X-Pos/]
+        C --> F[📁 syn_mXXXXXX-X-Pre/]
+        C --> G[📁 syn_mXXXXXX-X-Pos/]
+        
+        D --> H[🖼️ front.png]
+        D --> I[🖼️ left.png]
+        E --> J[🖼️ front.png]
+        E --> K[🖼️ left.png]
+    end
+    
+    style A fill:#e3f2fd,stroke:#1976d2
+    style B fill:#fff3e0,stroke:#f57c00
+    style C fill:#e8f5e8,stroke:#388e3c
+```
+
+## 🎯 Guia de Uso Rápido
+
+### 🚀 Execução Principal
+
+```mermaid
+graph LR
+    A[▶️ Executar main.py] --> B{📊 Dados Válidos?}
+    B -->|✅ Sim| C[🎛️ Escolher Método]
+    B -->|❌ Não| D[🔧 Configurar Dados]
+    C --> E[🖼️ Processar Imagens]
+    E --> F[📊 Ver Resultados]
+    D --> A
+    
+    style A fill:#4caf50,color:#fff
+    style C fill:#2196f3,color:#fff
+    style F fill:#ff9800,color:#fff
+```
+
+### 📋 Menu Interativo
+
+```bash
+🎯 Sistema INOVIA - Escolha do Método de Segmentação
+
+1️⃣ 🧠 DeepLabV3 + ResNet101 (Alta Precisão)
+   ├── ⚡ GPU/CPU automático
+   ├── 🎯 Segmentação semântica
+   └── 📊 Confidence scores
+
+2️⃣ 📐 Parametrização v0.4.0 (Alta Velocidade)
+   ├── 📏 Método por Linhas (768 funções)
+   ├── 📐 Método por Colunas (1024 funções)
+   ├── 🔗 Método Combinado (fusão inteligente)
+   └── 🔄 Separado + União (análise comparativa)
+
+Digite sua escolha [1-2]: _
+```
+
+### 🔍 Exemplos de Uso Específicos
+
+```mermaid
+graph TD
+    subgraph "🧠 Uso DeepLabV3"
+        A1[python main.py]
+        A1 --> A2[Escolher opção 1]
+        A2 --> A3[🔄 Aguardar processamento ~15s]
+        A3 --> A4[📊 Visualizar resultados alta precisão]
+    end
+    
+    subgraph "📐 Uso Parametrização Rápida"
+        B1[python main.py]
+        B1 --> B2[Escolher opção 2]
+        B2 --> B3{🎛️ Submenu Método}
+        B3 --> B4[📏 Linhas: ~1-2s]
+        B3 --> B5[📐 Colunas: ~1-2s]
+        B3 --> B6[🔗 Combinado: ~2-3s]
+        B3 --> B7[🔄 Separado: ~3-4s]
+    end
+    
+    subgraph "📦 Uso Bounding Boxes"
+        C1[python exemplo_bounding_box.py]
+        C1 --> C2[🖼️ Selecionar imagem]
+        C2 --> C3[🔍 Detectar retângulos]
+        C3 --> C4[📊 Visualizar métricas]
+    end
+    
+    style A1,B1,C1 fill:#4caf50,color:#fff
+    style A4,B4,B5,B6,B7,C4 fill:#2196f3,color:#fff
+```
+
+### 📊 Interpretar Resultados
+
+```mermaid
+graph LR
+    subgraph "📈 Métricas Principais"
+        A[📊 MSE < 200] --> A1[✅ Qualidade Excelente]
+        B[🎯 IoU > 0.8] --> B1[✅ Precisão Alta]
+        C[⏱️ Tempo < 5s] --> C1[✅ Performance Ótima]
+    end
+    
+    subgraph "🎨 Visualizações"
+        D[🔴 Overlay Vermelho] --> D1[📏 Segmentação Linhas]
+        E[🟢 Overlay Verde] --> E1[📐 Segmentação Colunas]
+        F[🔵 Overlay Azul] --> F1[🔗 Método Combinado]
+        G[🟣 Overlay Magenta] --> G1[🔄 Separado + União]
+    end
+    
+    subgraph "📦 Arquivos Gerados"
+        H[📄 resultados_*.json] --> H1[📊 Métricas detalhadas]
+        I[🖼️ mascara_*.png] --> I1[📱 Imagem processada]
+        J[📈 graficos_*.png] --> J1[📊 Análises visuais]
+    end
+```
 
 ## 🎯 Evolução do Desenvolvimento
 
@@ -1446,35 +1702,143 @@ analise_colunas = segmentador.analisar_convergencia_parametros(resultado_colunas
 - 📄 **[importa_dados.py](importa_dados.py)** - Gerenciamento de dados de entrada
 
 ### 🎯 Tecnologias Utilizadas
-- **🐍 Python 3.11+** - Linguagem principal
-- **🤖 PyTorch + Torchvision** - Deep Learning (DeepLabV3)
-- **⚡ NumPy Vectorizado** - Computação matemática otimizada (Parametrização v0.3.0)
-- **🖼️ OpenCV** - Processamento de imagens e detecção de contornos
-- **📊 Matplotlib** - Visualização avançada e gráficos comparativos
-- **🧮 SciPy + Scikit-learn** - Algoritmos científicos avançados
-- **🖼️ OpenCV** - Processamento de imagens
-- **📊 Pandas + Matplotlib** - Análise e visualização de dados
-- **🚀 CUDA** - Aceleração GPU (opcional para DeepLabV3)
-- **🔬 MSE Rigoroso** - Métricas de qualidade precisas
 
-### 🌟 Destaques da v0.3.0
-- **🔗 Extensão Dimensional**: Análise horizontal (linhas) + vertical (colunas)
-- **🎯 Parâmetros c e d**: Otimização específica para análise vertical
-- **🔀 Fusão Inteligente**: 3 métodos de combinação de máscaras
-- **� Comparação Automática**: Análise de todos os métodos simultaneamente
-- **🎨 Visualizações Expandidas**: Overlays especializados por método
-- **⚡ Performance Mantida**: Velocidade 3-5x superior preservada
-- **� Análise Completa**: ~4-6s para análise comparativa total
+```mermaid
+graph TD
+    subgraph "🐍 Core Python"
+        A[Python 3.8+]
+        B[NumPy 1.21+]
+        C[Pandas 1.3+]
+        D[SciPy 1.7+]
+    end
+    
+    subgraph "🧠 Deep Learning"
+        E[PyTorch 2.0+]
+        F[TorchVision]
+        G[CUDA Support]
+    end
+    
+    subgraph "🖼️ Computer Vision"
+        H[OpenCV 4.5+]
+        I[Pillow 8.3+]
+        J[Matplotlib 3.5+]
+    end
+    
+    A --> B
+    B --> C
+    C --> D
+    E --> F
+    F --> G
+    H --> I
+    I --> J
+    
+    style A fill:#306998,color:#fff
+    style E fill:#ee4c2c,color:#fff
+    style H fill:#5c85d6,color:#fff
+```
+
+## 🔮 Roadmap Futuro e Desenvolvimento
+
+### 🚀 Próximas Versões Planejadas
+
+```mermaid
+gantt
+    title 📋 Roadmap de Desenvolvimento INOVIA
+    dateFormat  YYYY-MM-DD
+    section v0.6.0 - Analytics
+    Correlações Automáticas        :2025-09-12, 3d
+    Dashboard Interativo           :2025-09-15, 4d
+    Métricas Avançadas            :2025-09-19, 3d
+    
+    section v0.7.0 - Interface Web
+    Streamlit/Dash Integration    :2025-09-22, 5d
+    Interface Responsiva          :2025-09-27, 4d
+    Multi-usuário                 :2025-10-01, 3d
+    
+    section v0.8.0 - IA Avançada
+    Novos Modelos Deep Learning   :2025-10-04, 6d
+    Auto-tuning Parâmetros        :2025-10-10, 4d
+    Transfer Learning             :2025-10-14, 5d
+    
+    section v1.0.0 - Release
+    Documentação Completa         :2025-10-19, 4d
+    Testes Automáticos           :2025-10-23, 3d
+    Deploy Production             :2025-10-26, 2d
+```
+
+### 🤝 Como Contribuir
+
+```mermaid
+graph TD
+    A[🤔 Interesse em Contribuir] --> B{🎯 Tipo de Contribuição}
+    
+    B -->|� Bug Reports| C[📝 Criar Issue]
+    B -->|✨ Features| D[💡 Propor Enhancement]
+    B -->|📖 Documentação| E[📚 Melhorar Docs]
+    B -->|🧪 Testes| F[🔍 Adicionar Tests]
+    
+    C --> G[� Fork Repository]
+    D --> G
+    E --> G
+    F --> G
+    
+    G --> H[🌿 Criar Branch]
+    H --> I[💻 Implementar Mudanças]
+    I --> J[✅ Testar Localmente]
+    J --> K[📤 Pull Request]
+    K --> L[👥 Code Review]
+    L --> M[� Merge Approved]
+    
+    style A fill:#4caf50,color:#fff
+    style B fill:#ff9800,color:#fff
+    style M fill:#2196f3,color:#fff
+```
+
+### � Suporte e Comunidade
+
+```mermaid
+graph LR
+    A[❓ Precisa de Ajuda?] --> B{🔍 Tipo de Problema}
+    
+    B -->|📖 Documentação| C[📚 Consultar README]
+    B -->|🐛 Bug Report| D[🎫 Abrir Issue]
+    B -->|💡 Feature Request| E[💭 Propor Enhancement]
+    B -->|❓ Dúvida Geral| F[💬 Discussions]
+    
+    style A fill:#ff9800,color:#fff
+    style C fill:#4caf50,color:#fff
+    style D fill:#f44336,color:#fff
+    style E fill:#2196f3,color:#fff
+    style F fill:#9c27b0,color:#fff
+```
 
 ---
 
-**🔗 Links Úteis:**
-- 📋 [CHANGELOG.md](CHANGELOG.md) - Histórico detalhado de versões
-- 📄 [exemplo_segmentacao_v4.py](exemplo_segmentacao_v4.py) - Exemplos das novas funcionalidades v0.4.0
-- 🐛 [Issues](../../issues) - Reportar bugs ou sugerir melhorias
-- 🤝 [Contributing](../../pulls) - Contribuir com o projeto
+## 📄 Licença e Créditos
 
-**📞 Suporte:**
-- 📧 Email: suporte@inovia.com
-- 💬 Chat: [Discord INOVIA](https://discord.gg/inovia)
-- 📱 WhatsApp: +55 (11) 99999-9999
+### 🙏 Agradecimentos Especiais
+
+- **🧠 PyTorch Team**: Framework de deep learning excepcional
+- **📊 NumPy Community**: Base sólida para computação científica  
+- **🖼️ OpenCV Contributors**: Ferramentas robustas de visão computacional
+- **🎯 INOVIA**: Oportunidade de desenvolver solução inovadora
+- **👥 Open Source Community**: Inspiração e conhecimento compartilhado
+
+---
+
+<div align="center">
+
+### � Projeto INOVIA - Segmentação Inteligente de Imagens
+
+**Desenvolvido com ❤️ para análise avançada de medidas corporais sintéticas**
+
+[![Python](https://img.shields.io/badge/Python-3.8+-blue?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-red?style=for-the-badge&logo=pytorch&logoColor=white)](https://pytorch.org)
+[![OpenCV](https://img.shields.io/badge/OpenCV-4.5+-green?style=for-the-badge&logo=opencv&logoColor=white)](https://opencv.org)
+[![NumPy](https://img.shields.io/badge/NumPy-1.21+-orange?style=for-the-badge&logo=numpy&logoColor=white)](https://numpy.org)
+
+**⭐ Se este projeto foi útil, considere dar uma estrela no GitHub!**
+
+📋 [CHANGELOG.md](CHANGELOG.md) | 🐛 [Issues](../../issues) | 🤝 [Contributing](../../pulls) | 📧 [Contato](mailto:danilo.rigitano@inovia.com)
+
+</div>

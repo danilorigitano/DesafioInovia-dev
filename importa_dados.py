@@ -1,41 +1,32 @@
 #!/usr/bin/env python3
 """
-Módulo para importação e verificação de dados do projeto INOVIA
-Este módulo gerencia a localização e verificação dos dados necessários
+Módulo de importação e validação de dados - INOVIA
+Gerencia carregamento de CSV e validação de estruturas de imagens
 """
 
 from pathlib import Path
 import pandas as pd
 
 class ImportadorDados:
-    """
-    Classe responsável por importar e verificar a existência dos dados do projeto
-    """
+    """Gerencia importação e validação de dados"""
     
     def __init__(self):
-        """
-        Inicializa o importador com os caminhos dos dados
-        """
+        """Inicializa caminhos dos dados"""
         self.project_root = Path(__file__).parent.parent
         self.dados_imagens = self.project_root / "INOVIA_IMAGENS"
         self.dados_csv = self.project_root / "medidas_dados_sinteticos.csv"
     
     def carregar_dados_csv(self):
-        """
-        Carrega os dados do arquivo CSV
-        
-        Returns:
-            pandas.DataFrame ou None: DataFrame com os dados ou None se erro
-        """
+        """Carrega dados do CSV"""
         try:
             df = pd.read_csv(self.dados_csv)
-            print(f"CSV carregado com sucesso: {len(df)} registros")
+            print(f"✅ CSV: {len(df)} registros")
             return df
         except FileNotFoundError:
-            print(f"ERRO: Arquivo CSV não encontrado: {self.dados_csv}")
+            print(f"❌ CSV não encontrado: {self.dados_csv}")
             return None
         except Exception as e:
-            print(f"ERRO ao carregar CSV: {e}")
+            print(f"❌ Erro CSV: {e}")
             return None
     
     def listar_imagens_pasta(self):
