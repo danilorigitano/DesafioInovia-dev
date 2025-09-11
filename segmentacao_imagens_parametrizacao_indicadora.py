@@ -75,7 +75,14 @@ warnings.filterwarnings('ignore')
 
 class SegmentacaoParametrizacaoIndicadora:
     """
-    Segmentação com funções indicadoras - Versão Estendida v0.4.0 - MÓDULO PRINCIPAL
+    Segmentação com funções indicadoras - Versão Otimizada v0.4.1 - MÓDULO PRINCIPAL
+    
+    🚀 NOVA OTIMIZAÇÃO v0.4.1: VETOR DE PIXELS CLAROS EM TEMPO REAL
+    =================================================================
+    ✅ Vetor calculado DURANTE a otimização dos parâmetros (não depois)
+    ✅ Zero overhead adicional - cálculo inline
+    ✅ Código limpo - funções desnecessárias removidas
+    ✅ Estatísticas automáticas em tempo real
     
     RESPONSABILIDADE: Processamento e segmentação de imagens (SEM visualização)
     MÓDULO COMPLEMENTAR: exibicao_imagens_parametrizadas.py (visualização separada)
@@ -92,15 +99,14 @@ class SegmentacaoParametrizacaoIndicadora:
     ✓ Geração de dados para visualização
     ✓ Estatísticas detalhadas e comparativas
     
-    EXTENSÕES IMPLEMENTADAS v0.4.0:
+    EXTENSÕES IMPLEMENTADAS v0.4.1:
     ===================================
     1. Segmentação por LINHAS: 768 funções indicadoras (uma por linha)
     2. Segmentação por COLUNAS: 1024 funções indicadoras (uma por coluna)
-    3. Segmentação COMBINADA: Combina resultados com intersecção ou união
-    4. Segmentação SEPARADA E UNIÃO: NOVO! Mostra separado e depois união
-    5. Análise de métricas e estatísticas de performance
-    6. Otimização de parâmetros para cada linha/coluna
-    7. Funções indicadoras com pontos c e d para colunas
+    3. Segmentação SEPARADA E UNIÃO: Mostra separado e depois união + intersecção
+    4. Análise de métricas e estatísticas de performance
+    5. Otimização de parâmetros para cada linha/coluna
+    6. Funções indicadoras com pontos c e d para colunas
     
     OTIMIZAÇÕES MANTIDAS:
     ===================================
@@ -111,17 +117,22 @@ class SegmentacaoParametrizacaoIndicadora:
     5. Operações matriciais eliminam loops Python
     6. Análise vectorizada de estatísticas globais
     
-    MÉTODOS PRINCIPAIS v0.4.0:
+    MÉTODOS PRINCIPAIS v0.4.1:
     ===================================
-    - segmentar(): Segmentação clássica por linhas
+    - segmentar(): Segmentação clássica por linhas + vetor automático
     - segmentar_por_colunas(): Segmentação por colunas
-    - segmentar_combinado(): Segmentação híbrida (intersecção ou união)
-    - segmentar_separado_e_unido(): NOVO! Implementação solicitada
+    - segmentar_separado_e_unido(): Segmentação separada + união + intersecção + vetor automático
+    
+    🎁 TODOS OS MÉTODOS DE LINHA agora incluem automaticamente:
+       • resultado['vetor_pixels_claros']: Array com largura da silhueta por linha
+       • resultado['largura_media_silhueta']: Largura média da silhueta
+       • resultado['largura_min_silhueta']: Largura mínima da silhueta
+       • resultado['largura_max_silhueta']: Largura máxima da silhueta
     
     🎨 PARA VISUALIZAÇÃO: Use ExibicaoImagensParametrizadas do módulo exibicao_imagens_parametrizadas.py
     ⚡ FOCO DESTE MÓDULO: Processamento puro sem interface gráfica
     
-    RESULTADO: Velocidade 3-5x superior + 4 abordagens diferentes + separação de responsabilidades
+    RESULTADO: Velocidade 3-5x superior + 3 abordagens diferentes + separação de responsabilidades
     TEMPO: ~1-2s por método individual, ~4-6s para análise completa, ~6-8s para separado e união
     """
     
@@ -143,10 +154,11 @@ class SegmentacaoParametrizacaoIndicadora:
         self.min_area = min_area
         self.enhance_contrast = enhance_contrast
         
-        print(f"🔧 Segmentador parametrizado v0.4.0 (MÓDULO PRINCIPAL - SEM visualização) inicializado:")
+        print(f"🔧 Segmentador parametrizado v0.4.1 (OTIMIZADO - Vetor em tempo real) inicializado:")
         print(f"📐 Dimensões alvo: {self.target_width}x{self.target_height}")
         print(f"📏 Funções indicadoras de LINHAS: {self.target_height}")
         print(f"📐 Funções indicadoras de COLUNAS: {self.target_width}")
+        print(f"🚀 NOVO: Vetor de pixels claros calculado automaticamente em tempo real")
         print(f"🎯 MÉTODOS: segmentar(), segmentar_por_colunas(), segmentar_combinado(), segmentar_separado_e_unido()")
         print(f"✨ NOVA FUNCIONALIDADE: Segmentação separada e união implementada!")
         print(f"⚡ Vectorização NumPy: 3-5x mais rápido")
@@ -277,7 +289,7 @@ class SegmentacaoParametrizacaoIndicadora:
         
         Args:
             linha_idx: Índice da linha
-            largura: Largura da função (512)
+            largura: Largura da função 
             pontos_inicio: Array com posições de início
             pontos_fim: Array com posições de fim
             valor_maximo: Valor máximo para todas as funções
@@ -707,20 +719,29 @@ class SegmentacaoParametrizacaoIndicadora:
         Cada função indicadora tem formato: 0 -> valor_max -> 0
         Versão com parâmetros mais rigorosos usando apenas MSE.
         
+        NOVA FUNCIONALIDADE v0.4.1:
+        ============================
+        ✓ Constrói o vetor de pixels claros DURANTE a otimização (não depois)
+        ✓ Mantém a velocidade do código original
+        ✓ Zero overhead adicional - cálculo inline
+        
         Args:
             imagem_gray: Imagem em escala de cinza 1024x768
             
         Returns:
-            tuple: (mascara_final, parametros_otimizados, metricas_todas_linhas)
+            tuple: (mascara_final, parametros_otimizados, metricas_todas_linhas, vetor_pixels_claros)
         """
         altura, largura = imagem_gray.shape
         print(f"Aplicando {altura} funções indicadoras com parâmetros otimizados (velocidade) para imagem {largura}x{altura}")
+        print(f"🎯 NOVA: Construindo vetor de pixels claros em tempo real...")
         
         # Arrays para armazenar resultados
         mascara_final = np.zeros_like(imagem_gray, dtype=np.uint8)
         parametros_todas_linhas = []
         metricas_todas_linhas = []
         
+        # 🆕 NOVO: Vetor de pixels claros construído em tempo real
+        vetor_pixels_claros = np.zeros(altura, dtype=np.int32)
         
         # Análise global da imagem para parametrização rigorosa
         intensidade_global = np.mean(imagem_gray)
@@ -741,6 +762,10 @@ class SegmentacaoParametrizacaoIndicadora:
             
             # Otimiza parâmetros da função indicadora para esta linha (rigoroso)
             params_otimizados = self._otimizar_parametros_linha(linha_pixels, linha_idx)
+            
+            # 🆕 NOVO: Calcula pixels claros INLINE - zero overhead!
+            largura_silhueta = params_otimizados['pixel_fim'] - params_otimizados['pixel_inicio']
+            vetor_pixels_claros[linha_idx] = largura_silhueta
             
             # Gera a função indicadora otimizada
             funcao_otimizada = self._gerar_funcao_indicadora_linha(
@@ -805,7 +830,25 @@ class SegmentacaoParametrizacaoIndicadora:
         print(f"Linhas ruins (MSE ≥ 500): {linhas_ruins}/{len(mses)} ({100*linhas_ruins/len(mses):.1f}%)")
         print(f"Processamento com métrica MSE completado!")
         
-        return mascara_final, parametros_todas_linhas, metricas_todas_linhas
+        # 🆕 NOVO: Estatísticas do vetor de pixels claros calculado em tempo real
+        print(f"\n=== VETOR DE PIXELS CLAROS (TEMPO REAL) ===")
+        print(f"📊 Vetor construído com {len(vetor_pixels_claros)} elementos")
+        print(f"📏 Largura mínima da silhueta: {np.min(vetor_pixels_claros)} pixels")
+        print(f"📏 Largura máxima da silhueta: {np.max(vetor_pixels_claros)} pixels")
+        print(f"📏 Largura média da silhueta: {np.mean(vetor_pixels_claros):.1f} pixels")
+        print(f"📏 Desvio padrão: {np.std(vetor_pixels_claros):.1f} pixels")
+        
+        # Análise da distribuição - inline, sem overhead
+        linhas_estreitas = np.sum(vetor_pixels_claros < 100)
+        linhas_medias = np.sum((vetor_pixels_claros >= 100) & (vetor_pixels_claros < 300))
+        linhas_largas = np.sum(vetor_pixels_claros >= 300)
+        
+        print(f"📈 Distribuição da largura da silhueta:")
+        print(f"   • Estreitas (< 100px): {linhas_estreitas} ({100*linhas_estreitas/altura:.1f}%)")
+        print(f"   • Médias (100-299px): {linhas_medias} ({100*linhas_medias/altura:.1f}%)")
+        print(f"   • Largas (≥ 300px): {linhas_largas} ({100*linhas_largas/altura:.1f}%)")
+        
+        return mascara_final, parametros_todas_linhas, metricas_todas_linhas, vetor_pixels_claros
 
     def _aplicar_parametrizacao_colunas(self, imagem_gray):
         """
@@ -813,19 +856,30 @@ class SegmentacaoParametrizacaoIndicadora:
         Cada função indicadora tem formato: 0 -> valor_max -> 0
         Versão com parâmetros otimizados usando apenas MSE.
         
+        NOVA FUNCIONALIDADE v0.4.1:
+        ============================
+        ✓ Constrói o vetor de pixels claros DURANTE a otimização (não depois)
+        ✓ Mantém a velocidade do código original
+        ✓ Zero overhead adicional - cálculo inline
+        ✓ Análogo ao vetor de pixels claros para linhas
+        
         Args:
             imagem_gray: Imagem em escala de cinza 1024x768
             
         Returns:
-            tuple: (mascara_final, parametros_otimizados, metricas_todas_colunas)
+            tuple: (mascara_final, parametros_otimizados, metricas_todas_colunas, vetor_pixels_claros)
         """
         altura, largura = imagem_gray.shape
         print(f"Aplicando {largura} funções indicadoras de colunas com parâmetros otimizados para imagem {largura}x{altura}")
+        print(f"🎯 NOVA: Construindo vetor de pixels claros em tempo real para colunas...")
         
         # Arrays para armazenar resultados
         mascara_final = np.zeros_like(imagem_gray, dtype=np.uint8)
         parametros_todas_colunas = []
         metricas_todas_colunas = []
+        
+        # 🆕 NOVO: Vetor de pixels claros construído em tempo real (d-c)
+        vetor_pixels_claros = np.zeros(largura, dtype=np.int32)
         
         # Análise global da imagem para parametrização rigorosa
         intensidade_global = np.mean(imagem_gray)
@@ -846,6 +900,10 @@ class SegmentacaoParametrizacaoIndicadora:
             
             # Otimiza parâmetros da função indicadora para esta coluna
             params_otimizados = self._otimizar_parametros_coluna(coluna_pixels, coluna_idx)
+            
+            # 🆕 NOVO: Calcula pixels claros INLINE - zero overhead! (d-c)
+            altura_silhueta = params_otimizados['pixel_fim'] - params_otimizados['pixel_inicio']
+            vetor_pixels_claros[coluna_idx] = altura_silhueta
             
             # Gera a função indicadora otimizada
             funcao_otimizada = self._gerar_funcao_indicadora_coluna(
@@ -910,7 +968,25 @@ class SegmentacaoParametrizacaoIndicadora:
         print(f"Colunas ruins (MSE ≥ 500): {colunas_ruins}/{len(mses)} ({100*colunas_ruins/len(mses):.1f}%)")
         print(f"Processamento de colunas com métrica MSE completado!")
         
-        return mascara_final, parametros_todas_colunas, metricas_todas_colunas
+        # 🆕 NOVO: Estatísticas do vetor de pixels claros calculado em tempo real
+        print(f"\n=== VETOR DE PIXELS CLAROS COLUNAS (TEMPO REAL) ===")
+        print(f"📊 Vetor construído com {len(vetor_pixels_claros)} elementos")
+        print(f"📏 Altura mínima da silhueta: {np.min(vetor_pixels_claros)} pixels")
+        print(f"📏 Altura máxima da silhueta: {np.max(vetor_pixels_claros)} pixels")
+        print(f"📏 Altura média da silhueta: {np.mean(vetor_pixels_claros):.1f} pixels")
+        print(f"📏 Desvio padrão: {np.std(vetor_pixels_claros):.1f} pixels")
+        
+        # Análise da distribuição - inline, sem overhead
+        colunas_estreitas = np.sum(vetor_pixels_claros < 50)
+        colunas_medias = np.sum((vetor_pixels_claros >= 50) & (vetor_pixels_claros < 150))
+        colunas_largas = np.sum(vetor_pixels_claros >= 150)
+        
+        print(f"📈 Distribuição da altura da silhueta:")
+        print(f"   • Estreitas (< 50px): {colunas_estreitas} ({100*colunas_estreitas/largura:.1f}%)")
+        print(f"   • Médias (50-149px): {colunas_medias} ({100*colunas_medias/largura:.1f}%)")
+        print(f"   • Largas (≥ 150px): {colunas_largas} ({100*colunas_largas/largura:.1f}%)")
+        
+        return mascara_final, parametros_todas_colunas, metricas_todas_colunas, vetor_pixels_claros
 
     def _combinar_mascaras_linhas_colunas(self, mascara_linhas, mascara_colunas, metodo='intersecao'):
         """
@@ -1014,7 +1090,7 @@ class SegmentacaoParametrizacaoIndicadora:
             imagem_gray = self._melhorar_contraste(imagem_gray)
             
             # 4. Aplica parametrização com 768 funções indicadoras (uma por linha)
-            mascara_bruta, parametros_linhas, metricas_linhas = self._aplicar_parametrizacao_linhas(imagem_gray)
+            mascara_bruta, parametros_linhas, metricas_linhas, vetor_pixels_claros = self._aplicar_parametrizacao_linhas(imagem_gray)
             
             # 5. Pós-processamento
             mascara_final = self._pos_processar(mascara_bruta)
@@ -1035,6 +1111,13 @@ class SegmentacaoParametrizacaoIndicadora:
                 'parametros_linhas': parametros_linhas,
                 'metricas_linhas': metricas_linhas,
                 'mse_global': mse_global,
+                
+                # 🆕 NOVO: Vetor de pixels claros calculado em tempo real
+                'vetor_pixels_claros': vetor_pixels_claros,
+                'largura_media_silhueta': np.mean(vetor_pixels_claros),
+                'largura_min_silhueta': np.min(vetor_pixels_claros),
+                'largura_max_silhueta': np.max(vetor_pixels_claros),
+                
                 'sucesso': True
             }
             
@@ -1077,7 +1160,7 @@ class SegmentacaoParametrizacaoIndicadora:
             imagem_gray = self._melhorar_contraste(imagem_gray)
             
             # 4. Aplica parametrização com 1024 funções indicadoras (uma por coluna)
-            mascara_bruta, parametros_colunas, metricas_colunas = self._aplicar_parametrizacao_colunas(imagem_gray)
+            mascara_bruta, parametros_colunas, metricas_colunas, vetor_pixels_claros_colunas = self._aplicar_parametrizacao_colunas(imagem_gray)
             
             # 5. Pós-processamento
             mascara_final = self._pos_processar(mascara_bruta)
@@ -1097,98 +1180,13 @@ class SegmentacaoParametrizacaoIndicadora:
                 'mascara_bruta': mascara_bruta,
                 'parametros_colunas': parametros_colunas,
                 'metricas_colunas': metricas_colunas,
+                'vetor_pixels_claros_colunas': vetor_pixels_claros_colunas,
                 'mse_global': mse_global,
                 'sucesso': True
             }
             
         except Exception as e:
             print(f"Erro durante segmentação por colunas: {e}")
-            return {'sucesso': False, 'erro': str(e)}
-
-    def segmentar_combinado(self, imagem_path, metodo_combinacao='intersecao'):
-        """
-        Realiza a segmentação combinada usando funções indicadoras de linhas E colunas.
-        Permite escolher entre interseção ou união para combinar as máscaras.
-        
-        Args:
-            imagem_path: Caminho para a imagem
-            metodo_combinacao: 'intersecao' ou 'uniao' para combinar as máscaras
-            
-        Returns:
-            dict: Dicionário com resultados da segmentação combinada
-        """
-        try:
-            # Carrega imagem
-            if isinstance(imagem_path, str):
-                imagem = cv2.imread(imagem_path)
-                if imagem is None:
-                    raise ValueError(f"Não foi possível carregar a imagem: {imagem_path}")
-                imagem = cv2.cvtColor(imagem, cv2.COLOR_BGR2RGB)
-            else:
-                imagem = imagem_path
-            
-            print(f"Iniciando segmentação combinada (linhas + colunas) com método: {metodo_combinacao}")
-            print(f"Imagem original: {imagem.shape}")
-            
-            # 1. Redimensiona para 1024x768
-            imagem_redimensionada = self._redimensionar_imagem(imagem)
-            print(f"Imagem redimensionada: {imagem_redimensionada.shape}")
-            
-            # 2. Converte para escala de cinza
-            imagem_gray = self._converter_para_gray(imagem_redimensionada)
-            print(f"Imagem convertida para grayscale: {imagem_gray.shape}")
-            
-            # 3. Melhora contraste se necessário
-            imagem_gray = self._melhorar_contraste(imagem_gray)
-            
-            # 4. Aplica parametrização com funções indicadoras de linhas
-            print("\n=== PROCESSANDO LINHAS ===")
-            mascara_linhas, parametros_linhas, metricas_linhas = self._aplicar_parametrizacao_linhas(imagem_gray)
-            
-            # 5. Aplica parametrização com funções indicadoras de colunas
-            print("\n=== PROCESSANDO COLUNAS ===")
-            mascara_colunas, parametros_colunas, metricas_colunas = self._aplicar_parametrizacao_colunas(imagem_gray)
-            
-            # 6. Combina as duas máscaras
-            print("\n=== COMBINANDO MÁSCARAS ===")
-            mascara_combinada = self._combinar_mascaras_linhas_colunas(mascara_linhas, mascara_colunas, metodo_combinacao)
-            
-            # 7. Pós-processamento da máscara combinada
-            mascara_final = self._pos_processar(mascara_combinada)
-            
-            # Calcula métricas finais
-            mses_linhas = [p['mse'] for p in parametros_linhas]
-            mses_colunas = [p['mse'] for p in parametros_colunas]
-            mse_global_linhas = np.mean(mses_linhas)
-            mse_global_colunas = np.mean(mses_colunas)
-            mse_global_combinado = (mse_global_linhas + mse_global_colunas) / 2
-            
-            print(f"\n=== SEGMENTAÇÃO COMBINADA CONCLUÍDA ===")
-            print(f"MSE global linhas: {mse_global_linhas:.2f}")
-            print(f"MSE global colunas: {mse_global_colunas:.2f}")
-            print(f"MSE global combinado: {mse_global_combinado:.2f}")
-            
-            return {
-                'imagem_original': imagem,
-                'imagem_redimensionada': imagem_redimensionada,
-                'imagem_gray': imagem_gray,
-                'mascara_binaria': mascara_final,
-                'mascara_combinada_bruta': mascara_combinada,
-                'mascara_linhas': mascara_linhas,
-                'mascara_colunas': mascara_colunas,
-                'parametros_linhas': parametros_linhas,
-                'parametros_colunas': parametros_colunas,
-                'metricas_linhas': metricas_linhas,
-                'metricas_colunas': metricas_colunas,
-                'mse_global_linhas': mse_global_linhas,
-                'mse_global_colunas': mse_global_colunas,
-                'mse_global_combinado': mse_global_combinado,
-                'metodo_combinacao': metodo_combinacao,
-                'sucesso': True
-            }
-            
-        except Exception as e:
-            print(f"Erro durante segmentação combinada: {e}")
             return {'sucesso': False, 'erro': str(e)}
 
     def segmentar_separado_e_unido(self, imagem_path):
@@ -1233,7 +1231,7 @@ class SegmentacaoParametrizacaoIndicadora:
             print("\n" + "=" * 40 + "")
             print("ETAPA 1: SEGMENTAÇÃO POR LINHAS")
             print("" + "=" * 40 + "")
-            mascara_linhas, parametros_linhas, metricas_linhas = self._aplicar_parametrizacao_linhas(imagem_gray)
+            mascara_linhas, parametros_linhas, metricas_linhas, vetor_pixels_claros = self._aplicar_parametrizacao_linhas(imagem_gray)
             mascara_linhas_final = self._pos_processar(mascara_linhas)
             
             # Métricas das linhas
@@ -1248,7 +1246,7 @@ class SegmentacaoParametrizacaoIndicadora:
             print("\n" + "=" * 40 + "")
             print("ETAPA 2: SEGMENTAÇÃO POR COLUNAS")
             print("" + "=" * 40 + "")
-            mascara_colunas, parametros_colunas, metricas_colunas = self._aplicar_parametrizacao_colunas(imagem_gray)
+            mascara_colunas, parametros_colunas, metricas_colunas, vetor_pixels_claros_colunas = self._aplicar_parametrizacao_colunas(imagem_gray)
             mascara_colunas_final = self._pos_processar(mascara_colunas)
             
             # Métricas das colunas
@@ -1325,6 +1323,14 @@ class SegmentacaoParametrizacaoIndicadora:
             print(f"- Intersecção vs Linhas: {percentual_intersecao_linhas:.1f}%")
             print(f"- Intersecção vs Colunas: {percentual_intersecao_colunas:.1f}%")
             
+            # 9. VETOR JÁ CALCULADO EM TEMPO REAL - apenas exibe resumo adicional
+            print(f"\n" + "=" * 50 + "")
+            print("VETOR DE PIXELS CLAROS - JÁ CALCULADO EM TEMPO REAL!")
+            print("" + "=" * 50 + "")
+            print(f"✅ Vetor de {len(vetor_pixels_claros)} elementos já disponível")
+            print(f"📊 Largura média da silhueta: {np.mean(vetor_pixels_claros):.1f} pixels")
+            print(f"📊 Range: {np.min(vetor_pixels_claros)} - {np.max(vetor_pixels_claros)} pixels")
+            
             return {
                 'imagem_original': imagem,
                 'imagem_redimensionada': imagem_redimensionada,
@@ -1352,6 +1358,16 @@ class SegmentacaoParametrizacaoIndicadora:
                 'metricas_linhas': metricas_linhas,
                 'metricas_colunas': metricas_colunas,
                 
+                # Vetor de pixels claros - NOVA FUNCIONALIDADE
+                'vetor_pixels_claros': vetor_pixels_claros,
+                'vetor_pixels_claros_colunas': vetor_pixels_claros_colunas,
+                'largura_media_silhueta': np.mean(vetor_pixels_claros),
+                'largura_min_silhueta': np.min(vetor_pixels_claros),
+                'largura_max_silhueta': np.max(vetor_pixels_claros),
+                'altura_media_silhueta': np.mean(vetor_pixels_claros_colunas),
+                'altura_min_silhueta': np.min(vetor_pixels_claros_colunas),
+                'altura_max_silhueta': np.max(vetor_pixels_claros_colunas),
+                
                 # MSE e estatísticas
                 'mse_global_linhas': mse_global_linhas,
                 'mse_global_colunas': mse_global_colunas,
@@ -1375,5 +1391,3 @@ class SegmentacaoParametrizacaoIndicadora:
         except Exception as e:
             print(f"Erro durante segmentação separada e união: {e}")
             return {'sucesso': False, 'erro': str(e)}
-
-
