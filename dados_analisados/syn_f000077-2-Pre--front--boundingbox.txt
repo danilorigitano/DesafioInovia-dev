@@ -1,0 +1,12 @@
+# Bounding Boxes - syn_f000077-2-Pre--front--boundingbox.txt
+# Total de bounding boxes: 1
+# Formato: x	y (coordenadas dos 4 cantos do retângulo)
+# Para cada bbox: canto_superior_esquerdo, superior_direito, inferior_direito, inferior_esquerdo
+#======================================================================
+
+# Bounding Box 1
+208	117
+816	117
+816	715
+208	715
+

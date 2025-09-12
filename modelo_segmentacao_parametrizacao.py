@@ -834,8 +834,7 @@ class ModeloSegmentacaoParametrizacao:
             logger.error(f"❌ Erro ao salvar resultados: {e}")
             return ""
     
-    def visualizar_amostra_resultados(self, num_amostras: int = 3,
-                                    tipo_visualizacao: str = 'auto'):
+    def visualizar_amostra_resultados(self, num_amostras: int = 3, tipo_visualizacao: str = 'auto'):
         """
         Visualiza uma amostra dos resultados processados.
         
@@ -871,9 +870,16 @@ class ModeloSegmentacaoParametrizacao:
                     seg_result['variavel'] = variavel
                     seg_result['tipo_imagem'] = img_result['tipo_imagem']
                     
-                    # 📦 NOVA FUNCIONALIDADE: Detectar bounding boxes automaticamente
-                    seg_result = self._processar_bounding_boxes(seg_result)
-                    
+                    if 'bounding_box_dados' in img_result and img_result['bounding_box_dados'].get('sucesso', False):
+                    # Reutilizar dados já processados
+                        bbox_dados = img_result['bounding_box_dados']
+                        seg_result['bounding_boxes'] = {
+                            'mascara_binaria': bbox_dados  # Usar dados já processados
+                        }
+                        print(f"♻️ Reutilizando bounding boxes: {len(bbox_dados.get('bounding_boxes', []))} caixas")
+                    else:
+                        print(f"⚠️ Sem bounding boxes disponíveis para {variavel} - {img_result['tipo_imagem']}")
+                
                     resultados_para_visualizar.append(seg_result)
             
             # Detectar automaticamente se deve usar visualização de 4 resultados
