@@ -1,72 +1,3 @@
-"""
-Segmentação de imagens usando parametrização com funções indicadoras - v0.4.0 MÓDULO PRINCIPAL
-RESPONSABILIDADE: Processamento e segmentação de imagens (SEM visualização)
-==================================================================================
-
-- Redimensiona imagem para 1024x768 pixels
-- NOVIDADE v0.4.0: Implementa segmentação separada e união conforme solicitado
-- Cria 768 funções indicadoras para LINHAS + 1024 para COLUNAS
-- Cada função começa em 0 (valor base), atinge um valor máximo no meio, volta a 0
-- EXTENSÕES v0.4.0: Segmentação separada e união, novos métodos de combinação
-- OTIMIZAÇÕES ULTRA-AVANÇADAS: Vectorização NumPy completa, arrays pré-alocados, early stopping
-- MSE (Mean Square Error) rigoroso - MÉTRICA ÚNICA com normalização
-- Processamento 5-8x mais rápido com operações matriciais NumPy SUPER-OTIMIZADAS
-- Early stopping inteligente: MSE < 200 para parada automática
-- Arrays pré-alocados eliminam overhead de .append() - ZERO ALLOCATIONS DINÂMICAS
-
-SEPARAÇÃO DE RESPONSABILIDADES v0.4.0:
-======================================
-🔹 ESTE MÓDULO (segmentacao_imagens_parametrizacao_indicadora.py):
-   - Processamento e segmentação de imagens
-   - Algoritmos de parametrização com funções indicadoras
-   - Cálculos de MSE e otimização de parâmetros
-   - Geração de máscaras binárias
-   - Métodos de combinação (união, intersecção)
-
-🔹 MÓDULO DE VISUALIZAÇÃO (exibicao_imagens_parametrizadas.py):
-   - Visualização e análise gráfica dos resultados
-   - Exibição de imagens originais, processadas e máscaras
-   - Gráficos de métricas e estatísticas
-   - Comparação visual dos diferentes métodos
-   - Interface para matplotlib
-
-MÉTODOS DISPONÍVEIS v0.4.0:
-============================
-- segmentar(): Segmentação clássica por linhas
-- segmentar_por_colunas(): Segmentação por colunas
-- segmentar_combinado(): Segmentação híbrida (intersecção ou união)
-- segmentar_separado_e_unido(): NOVO! Mostra resultados separados e depois união
-
-FUNCIONALIDADE IMPLEMENTADA:
-============================
-"quando pedido parametrizacao com linha e coluna ao mesmo tempo o resultado 
-deve ser dado separado e depois o dois juntos (união) e não intersecção"
-
-✓ Processamento separado de linhas e colunas
-✓ Geração individual dos resultados  
-✓ União dos resultados (não intersecção)
-✓ Estatísticas detalhadas e comparativas
-
-NOTA IMPORTANTE:
-===============
-🎨 Para VISUALIZAÇÃO dos resultados, use o módulo: exibicao_imagens_parametrizadas.py
-Este módulo foca APENAS no processamento, conforme separação de responsabilidades solicitada.
-
-EXEMPLO DE USO COMPLETO:
-========================
-```python
-# 1. Processar imagem (ESTE módulo)
-from segmentacao_imagens_parametrizacao_indicadora import SegmentacaoParametrizacaoIndicadora
-segmentador = SegmentacaoParametrizacaoIndicadora()
-resultado = segmentador.segmentar_separado_e_unido('imagem.jpg')
-
-# 2. Visualizar resultado (módulo separado)
-from exibicao_imagens_parametrizadas import ExibicaoImagensParametrizadas
-visualizador = ExibicaoImagensParametrizadas()
-visualizador.visualizar_resultado_individual(resultado, 'Minha Imagem')
-```
-"""
-
 import numpy as np
 import cv2
 from PIL import Image
@@ -75,100 +6,20 @@ warnings.filterwarnings('ignore')
 
 
 class SegmentacaoParametrizacaoIndicadora:
-    """
-    Segmentação com funções indicadoras - Versão Otimizada v0.4.1 - MÓDULO PRINCIPAL
-    
-    🚀 NOVA OTIMIZAÇÃO v0.4.1: VETOR DE PIXELS CLAROS EM TEMPO REAL
-    =================================================================
-    ✅ Vetor calculado DURANTE a otimização dos parâmetros (não depois)
-    ✅ Zero overhead adicional - cálculo inline
-    ✅ Código limpo - funções desnecessárias removidas
-    ✅ Estatísticas automáticas em tempo real
-    
-    RESPONSABILIDADE: Processamento e segmentação de imagens (SEM visualização)
-    MÓDULO COMPLEMENTAR: exibicao_imagens_parametrizadas.py (visualização separada)
-    
-    SEPARAÇÃO DE RESPONSABILIDADES:
-    ==============================
-    🔹 ESTE MÓDULO: Algoritmos de segmentação, cálculos MSE, geração de máscaras
-    🔹 MÓDULO VISUALIZAÇÃO: Gráficos, exibição, análise visual dos resultados
-    
-    FUNCIONALIDADE IMPLEMENTADA v0.4.0:
-    ====================================
-    ✓ Segmentação separada por linhas e colunas conforme solicitado
-    ✓ União dos resultados (não intersecção) 
-    ✓ Geração de dados para visualização
-    ✓ Estatísticas detalhadas e comparativas
-    
-    EXTENSÕES IMPLEMENTADAS v0.4.1:
-    ===================================
-    1. Segmentação por LINHAS: 768 funções indicadoras (uma por linha)
-    2. Segmentação por COLUNAS: 1024 funções indicadoras (uma por coluna)
-    3. Segmentação SEPARADA E UNIÃO: Mostra separado e depois união + intersecção
-    4. Análise de métricas e estatísticas de performance
-    5. Otimização de parâmetros para cada linha/coluna
-    6. Funções indicadoras com pontos c e d para colunas
-    
-    OTIMIZAÇÕES MANTIDAS:
-    ===================================
-    1. Vectorização NumPy completa (3-5x mais rápido)
-    2. Processamento em batches de múltiplas funções simultâneas  
-    3. Early stopping inteligente (MSE < 200)
-    4. MSE normalizado para comparação justa
-    5. Operações matriciais eliminam loops Python
-    6. Análise vectorizada de estatísticas globais
-    
-    MÉTODOS PRINCIPAIS v0.4.1:
-    ===================================
-    - segmentar(): Segmentação clássica por linhas + vetor automático
-    - segmentar_por_colunas(): Segmentação por colunas
-    - segmentar_separado_e_unido(): Segmentação separada + união + intersecção + vetor automático
-    
-    🎁 TODOS OS MÉTODOS DE LINHA agora incluem automaticamente:
-       • resultado['vetor_pixels_claros']: Array com largura da silhueta por linha
-       • resultado['largura_media_silhueta']: Largura média da silhueta
-       • resultado['largura_min_silhueta']: Largura mínima da silhueta
-       • resultado['largura_max_silhueta']: Largura máxima da silhueta
-    
-    🎨 PARA VISUALIZAÇÃO: Use ExibicaoImagensParametrizadas do módulo exibicao_imagens_parametrizadas.py
-    ⚡ FOCO DESTE MÓDULO: Processamento puro sem interface gráfica
-    
-    RESULTADO: Velocidade 3-5x superior + 3 abordagens diferentes + separação de responsabilidades
-    TEMPO: ~1-2s por método individual, ~4-6s para análise completa, ~6-8s para separado e união
-    """
     
     def __init__(self, target_width=1024, target_height=768, 
                  morph_kernel_size=3, min_area=50, enhance_contrast=True):
-        """
-        Inicializa o segmentador com parametrização indicadora.
-        
-        Args:
-            target_width: Largura alvo da imagem (1024)
-            target_height: Altura alvo da imagem (768)
-            morph_kernel_size: Tamanho do kernel para operações morfológicas
-            min_area: Área mínima para filtrar ruídos (pixels)
-            enhance_contrast: Se deve aplicar melhoria de contraste
-        """
+        """Inicializa o segmentador com parametrização indicadora."""
         self.target_width = target_width
         self.target_height = target_height
         self.morph_kernel_size = morph_kernel_size
         self.min_area = min_area
         self.enhance_contrast = enhance_contrast
         
-        print(f"🔧 Segmentador parametrizado v0.4.1 (OTIMIZADO - Vetor em tempo real) inicializado:")
-        print(f"📐 Dimensões alvo: {self.target_width}x{self.target_height}")
-        print(f"📏 Funções indicadoras de LINHAS: {self.target_height}")
-        print(f"📐 Funções indicadoras de COLUNAS: {self.target_width}")
-        print(f"🚀 NOVO: Vetor de pixels claros calculado automaticamente em tempo real")
-        print(f"🎯 MÉTODOS: segmentar(), segmentar_por_colunas(), segmentar_combinado(), segmentar_separado_e_unido()")
-        print(f"✨ NOVA FUNCIONALIDADE: Segmentação separada e união implementada!")
-        print(f"🔥 SUPER-OTIMIZAÇÃO: Vectorização NumPy ULTRA-AVANÇADA - 5-8x mais rápido")
-        print(f"⚡ Arrays pré-alocados: ZERO overhead de .append()")
-        print(f"🔄 Processamento em batches: múltiplas funções simultâneas")
-        print(f"⏹️ Early stopping: MSE < 200")
-        print(f"🔬 Kernel morfológico: {self.morph_kernel_size}")
-        print(f"🎨 VISUALIZAÇÃO: Use o módulo separado 'exibicao_imagens_parametrizadas.py'")
-        print(f"🔹 RESPONSABILIDADE: Este módulo foca APENAS no processamento de imagens")
+        print(f"🔧 Segmentador v0.5.0 OTIMIZADO inicializado:")
+        print(f"📐 Dimensões: {self.target_width}x{self.target_height}")
+        print(f"🎯 Funções indicadoras: {self.target_height} linhas, {self.target_width} colunas")
+        print(f"⚡ Vetorização NumPy ultra-avançada ativa")
     
     
     def _redimensionar_imagem(self, imagem):
@@ -180,11 +31,7 @@ class SegmentacaoParametrizacaoIndicadora:
             
         print(f"Redimensionando de {largura_original}x{altura_original} para {self.target_width}x{self.target_height}")
         
-        # Redimensiona usando interpolação bicúbica para melhor qualidade
-        imagem_redimensionada = cv2.resize(imagem, 
-                                         (self.target_width, self.target_height), 
-                                         interpolation=cv2.INTER_CUBIC)
-        return imagem_redimensionada
+        return cv2.resize(imagem, (self.target_width, self.target_height), interpolation=cv2.INTER_CUBIC)
     
     def _converter_para_gray(self, imagem):
         """Converte imagem para escala de cinza (0-255)."""
@@ -195,8 +42,7 @@ class SegmentacaoParametrizacaoIndicadora:
             gray = imagem.copy()
         
         # Garante que está no range 0-255
-        gray = np.clip(gray, 0, 255).astype(np.uint8)
-        return gray
+        return np.clip(gray, 0, 255).astype(np.uint8)
     
     def _melhorar_contraste(self, imagem_gray):
         """Aplica melhoria de contraste usando CLAHE."""
@@ -207,24 +53,11 @@ class SegmentacaoParametrizacaoIndicadora:
     
     def _gerar_funcao_indicadora_linha(self, linha_idx, largura, pixel_inicio=200, pixel_fim=400, valor_maximo=100):
         """
-        Gera uma função indicadora para uma linha específica.
-        Implementa a lógica: 0 (valor base) -> valor_maximo (branco) -> 0 (valor base)
-        
-        Args:
-            linha_idx: Índice da linha (0 a 381)
-            largura: Largura da imagem (512)
-            pixel_inicio: Pixel onde começa a subir (entre 0 e metade+50)
-            pixel_fim: Pixel onde volta a 0 (entre metade-50 e fim-0)
-            valor_maximo: Valor máximo no meio (intensidade da cor branca)
-            
-        Note:
-            Sempre garantido que pixel_inicio < pixel_fim
-            
-        Returns:
-            array: Função indicadora para esta linha (valores 0-255)
+        Gera função indicadora genérica: 0 -> valor_maximo -> 0
+        Funciona para linhas ou colunas.
         """
-        # Cálculo único da metade
-        metade = largura // 2  # 256 para largura 512
+
+        metade = largura // 2 
         
         # Validação única dos parâmetros com ranges otimizados
         pixel_inicio = max(5, min(metade + 50, pixel_inicio))  # 5 a 306
@@ -240,8 +73,6 @@ class SegmentacaoParametrizacaoIndicadora:
         # Garantir que valor_maximo está no range válido
         valor_maximo = max(40, min(255, valor_maximo))
         
-        
-        # Criar função inicializada com valor base 0 (revertido de 5 para 0)
         funcao = np.full(largura, 0, dtype=np.float32)
         
         # Região central: valor_maximo
@@ -267,6 +98,7 @@ class SegmentacaoParametrizacaoIndicadora:
         # Clipping final (garantir range 0-255)
         return np.clip(funcao, 0, 255).astype(np.float32)
     
+    
     def _calcular_metricas_linha(self, linha_pixels, linha_idx):
         """Calcula métricas para uma linha específica."""
         metricas = {
@@ -280,25 +112,10 @@ class SegmentacaoParametrizacaoIndicadora:
         
         return metricas
     
-
+    
     
     def _gerar_multiplas_funcoes_otimizada(self, linha_idx, largura, pontos_inicio, pontos_fim, valor_maximo):
-        """
-        OTIMIZAÇÃO AVANÇADA: Geração vetorizada ultra-eficiente de múltiplas funções indicadoras
-        
-        Gera múltiplas funções indicadoras simultaneamente usando operações NumPy puras,
-        eliminando completamente loops Python internos.
-        
-        Args:
-            linha_idx: Índice da linha
-            largura: Largura da função 
-            pontos_inicio: Array com posições de início
-            pontos_fim: Array com posições de fim
-            valor_maximo: Valor máximo para todas as funções
-            
-        Returns:
-            numpy.ndarray: [n_funcoes, largura] com todas as funções geradas
-        """
+        """Geração vetorizada ultra-eficiente de múltiplas funções indicadoras."""
         n_funcoes = len(pontos_inicio)
         funcoes = np.zeros((n_funcoes, largura), dtype=np.float32)
         
@@ -320,7 +137,6 @@ class SegmentacaoParametrizacaoIndicadora:
         pontos_inicio[mask_fim_grande] = np.maximum(5, largura - 30)
         pontos_fim[mask_fim_grande] = largura - 5
         
-        # OTIMIZAÇÃO AVANÇADA: Criação completamente vetorizada usando broadcasting
         
         # 1. Preenchimento da região central - OTIMIZADO com indexação em lote
         for i in range(n_funcoes):
@@ -493,17 +309,6 @@ class SegmentacaoParametrizacaoIndicadora:
     def _gerar_funcao_indicadora_coluna(self, coluna_idx, altura, pixel_inicio=150, pixel_fim=300, valor_maximo=100):
         """
         Gera uma função indicadora para uma coluna específica.
-        Implementa a lógica: 0 (valor base) -> valor_maximo (branco) -> 0 (valor base)
-        
-        Args:
-            coluna_idx: Índice da coluna (0 a largura-1)
-            altura: Altura da imagem (768)
-            pixel_inicio: Pixel onde começa a subir (ponto c)
-            pixel_fim: Pixel onde volta a 0 (ponto d)
-            valor_maximo: Valor máximo no meio (intensidade da cor branca)
-            
-        Returns:
-            array: Função indicadora para esta coluna (valores 0-255)
         """
         # Cálculo único da metade
         terco = altura // 3  # 384 para altura 768
@@ -551,19 +356,6 @@ class SegmentacaoParametrizacaoIndicadora:
     def _gerar_multiplas_funcoes_coluna_otimizada(self, coluna_idx, altura, pontos_inicio, pontos_fim, valor_maximo):
         """
         OTIMIZAÇÃO AVANÇADA: Geração vetorizada ultra-eficiente de múltiplas funções indicadoras para colunas
-        
-        Gera múltiplas funções indicadoras simultaneamente usando operações NumPy puras,
-        eliminando completamente loops Python internos para processamento de colunas.
-        
-        Args:
-            coluna_idx: Índice da coluna
-            altura: Altura da função (768)
-            pontos_inicio: Array com posições de início (pontos c)
-            pontos_fim: Array com posições de fim (pontos d)
-            valor_maximo: Valor máximo para todas as funções
-            
-        Returns:
-            numpy.ndarray: [n_funcoes, altura] com todas as funções geradas
         """
         n_funcoes = len(pontos_inicio)
         funcoes = np.zeros((n_funcoes, altura), dtype=np.float32)
@@ -642,23 +434,6 @@ class SegmentacaoParametrizacaoIndicadora:
     def _otimizar_parametros_coluna(self, coluna_pixels, coluna_idx):
         """
         OTIMIZAÇÃO VETORIZADA: Busca de parâmetros para colunas usando operações NumPy
-        
-        Otimiza os parâmetros da função indicadora para colunas usando vetorização NumPy:
-        1. Primeiro otimiza o ponto c (pixel_inicio) mantendo d fixo - VETORIZADO
-        2. Depois otimiza o ponto d (pixel_fim) mantendo o melhor c encontrado - VETORIZADO
-        
-        MELHORIAS:
-        - Geração vetorizada de múltiplas funções indicadoras simultaneamente
-        - Cálculo vetorizado de MSE para todas as funções de uma vez
-        - Eliminação de loops Python internos
-        - Performance 5-10x superior
-        
-        Args:
-            coluna_pixels: Array com os pixels da coluna
-            coluna_idx: Índice da coluna
-            
-        Returns:
-            dict: Melhores parâmetros encontrados
         """
         parametro_step = 1
         parametro_valor_maximo_fixo = 200
@@ -754,18 +529,6 @@ class SegmentacaoParametrizacaoIndicadora:
         Aplica a parametrização com 768 funções indicadoras (uma para cada linha).
         Cada função indicadora tem formato: 0 -> valor_max -> 0
         Versão com parâmetros mais rigorosos usando apenas MSE.
-        
-        NOVA FUNCIONALIDADE v0.4.1:
-        ============================
-        ✓ Constrói o vetor de pixels claros DURANTE a otimização (não depois)
-        ✓ Mantém a velocidade do código original
-        ✓ Zero overhead adicional - cálculo inline
-        
-        Args:
-            imagem_gray: Imagem em escala de cinza 1024x768
-            
-        Returns:
-            tuple: (mascara_final, parametros_otimizados, metricas_todas_linhas, vetor_pixels_claros)
         """
         altura, largura = imagem_gray.shape
         print(f"Aplicando {altura} funções indicadoras com parâmetros otimizados (velocidade) para imagem {largura}x{altura}")
@@ -891,19 +654,6 @@ class SegmentacaoParametrizacaoIndicadora:
         Aplica a parametrização com 1024 funções indicadoras (uma para cada coluna).
         Cada função indicadora tem formato: 0 -> valor_max -> 0
         Versão com parâmetros otimizados usando apenas MSE.
-        
-        NOVA FUNCIONALIDADE v0.4.1:
-        ============================
-        ✓ Constrói o vetor de pixels claros DURANTE a otimização (não depois)
-        ✓ Mantém a velocidade do código original
-        ✓ Zero overhead adicional - cálculo inline
-        ✓ Análogo ao vetor de pixels claros para linhas
-        
-        Args:
-            imagem_gray: Imagem em escala de cinza 1024x768
-            
-        Returns:
-            tuple: (mascara_final, parametros_otimizados, metricas_todas_colunas, vetor_pixels_claros)
         """
         altura, largura = imagem_gray.shape
         print(f"Aplicando {largura} funções indicadoras de colunas com parâmetros otimizados para imagem {largura}x{altura}")
@@ -1028,13 +778,6 @@ class SegmentacaoParametrizacaoIndicadora:
         """
         Combina as máscaras obtidas das funções indicadoras de linhas e colunas usando diferentes métodos.
         
-        Args:
-            mascara_linhas: Máscara resultante das funções indicadoras de linhas
-            mascara_colunas: Máscara resultante das funções indicadoras de colunas
-            metodo: Método de combinação ('intersecao' ou 'uniao')
-            
-        Returns:
-            numpy.ndarray: Máscara combinada
         """
         print(f"Combinando máscaras usando método: {metodo}")
         
@@ -1095,11 +838,6 @@ class SegmentacaoParametrizacaoIndicadora:
         """
         Realiza a segmentação da imagem usando 768 funções indicadoras de linhas.
         
-        Args:
-            imagem_path: Caminho para a imagem
-            
-        Returns:
-            dict: Dicionário com resultados da segmentação
         """
         try:
             # Carrega imagem
@@ -1165,11 +903,6 @@ class SegmentacaoParametrizacaoIndicadora:
         """
         Realiza a segmentação da imagem usando 1024 funções indicadoras de colunas.
         
-        Args:
-            imagem_path: Caminho para a imagem
-            
-        Returns:
-            dict: Dicionário com resultados da segmentação por colunas
         """
         try:
             # Carrega imagem
@@ -1230,12 +963,7 @@ class SegmentacaoParametrizacaoIndicadora:
         Realiza a segmentação por linhas e colunas SEPARADAMENTE e depois a UNIÃO.
         Este método implementa a funcionalidade solicitada: mostrar resultados separados
         e depois combinar usando união (não intersecção).
-        
-        Args:
-            imagem_path: Caminho para a imagem
-            
-        Returns:
-            dict: Dicionário com resultados da segmentação separada e união
+
         """
         try:
             # Carrega imagem
