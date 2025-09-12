@@ -17,7 +17,7 @@ graph LR
     style D fill:#fff3e0
 ```
 
-🚀 **Versão 0.5.0** - Detecção de Bounding Boxes nas Silhuetas!  
+🚀 **Versão 0.6.0** - Sistema Modernizado com Parametrização Otimizada!  
 📋 [Ver CHANGELOG.md](CHANGELOG.md) para histórico completo de desenvolvimento
 
 ## 📋 Visão Geral do Sistema
@@ -28,6 +28,7 @@ O Projeto INOVIA é uma solução completa e inovadora para segmentação e aná
 - **📦 Detecção Automática de Regiões**: Sistema de bounding boxes para localização precisa das áreas de interesse
 - **⚡ Performance Extrema**: Otimizações NumPy com processamento 3-5x mais rápido e early stopping inteligente
 - **📊 Análise Comparativa**: Métricas detalhadas e visualizações especializadas para cada método
+- **🧹 Arquitetura Modernizada**: Sistema simplificado focado exclusivamente em parametrização
 
 ### 🎯 Características Principais
 
@@ -75,8 +76,26 @@ pip install -r requirements.txt
 ### 🎮 Execução Principal
 
 ```bash
-python main.py
+python MainAvaliador.py
 ```
+
+**🎮 Interface Interativa:**
+- Seleção dinâmica do número de registros para análise
+- Padrão de 3 registros (pressione Enter)
+- Validação automática de entrada
+- Feedback visual durante o processamento
+
+### 📤 Exportação de Resultados
+
+```bash
+python exportacao_parametrizacao.py
+```
+
+**📋 Funcionalidades de Exportação:**
+- **Arquivo TXT**: Resultados em formato legível
+- **Métricas Completas**: MSE, tempo de processamento, parâmetros
+- **Organização Automática**: Salvos em `dados_analisados/`
+- **Integração Automática**: Pode ser chamado após processamento principal
 
 ### 📊 Estrutura de Pastas
 
@@ -87,15 +106,118 @@ projeto/
 │   ├── 002/front.png, left.png
 │   └── ...
 ├── 📁 dados_analisados/        # Resultados processados
-├── 🐍 main.py                  # Módulo principal
+├── 🐍 MainAvaliador.py         # Módulo principal
 ├── 🧠 escolher_modelo.py       # Seleção de método
 ├── 📐 modelo_segmentacao_parametrizacao.py
 ├── 🖼️ segmentacao_imagens_parametrizacao_indicadora.py
 ├── 📦 Bounding_box.py         # Detecção de regiões
+├── 📤 exportacao_parametrizacao.py  # Exportação TXT
 └── 📋 requirements.txt        # Dependências
 ```
 
 ## 🎯 Métodos de Segmentação
+
+### 🆕 Novidades v0.6.0
+
+#### 🧹 Modernização Arquitetural
+- **Remoção do DeepLabV3**: Sistema focado exclusivamente em parametrização matemática
+- **Arquitetura Simplificada**: Código mais limpo e manutenível
+- **Dependências Reduzidas**: Instalação mais rápida sem PyTorch
+- **Performance Otimizada**: Sistema dedicado à parametrização
+
+#### 🎮 Interface Aprimorada
+- **Seleção Dinâmica**: Escolha quantos registros analisar (1 até total disponível)
+- **Valor Padrão Inteligente**: Pressione Enter para usar padrão (3 registros)
+- **Validação Robusta**: Verificação automática de entradas
+- **Feedback Visual**: Confirmações e mensagens de status melhoradas
+
+### 🧠 Arquitetura de Processamento
+
+```mermaid
+graph TB
+    subgraph "🎮 Interface Usuário"
+        MainApp[🚀 MainAvaliador.py<br/>Interface Principal]
+        Menu[📋 Menu Interativo<br/>Seleção de Método]
+    end
+    
+    subgraph "📊 Gerenciamento Dados"
+        Import[📥 ImportadorDados<br/>Validação Dataset]
+        Filter[🎯 Filtros Inteligentes<br/>Gênero + Posição]
+        Valid[✅ Validação<br/>CSV ↔ Imagens]
+    end
+    
+    subgraph "🔧 Engine Parametrização"
+        Model[🧠 ModeloSegmentacao<br/>Coordenação]
+        Engine[⚡ SegmentacaoIndicadora<br/>Motor Matemático]
+        Metrics[📊 Métricas MSE/RMS<br/>Validação Científica]
+    end
+    
+    subgraph "📦 Módulos Auxiliares"
+        BBox[🔍 BoundingBox<br/>Detecção Regiões]
+        Display[🖼️ Visualização<br/>Resultados Gráficos]
+        Export[📤 Exportação<br/>Relatórios JSON]
+    end
+    
+    MainApp --> Menu
+    Menu --> Import
+    Import --> Filter
+    Filter --> Valid
+    Valid --> Model
+    Model --> Engine
+    Engine --> Metrics
+    Metrics --> BBox
+    BBox --> Display
+    Display --> Export
+    
+    style MainApp fill:#e3f2fd
+    style Engine fill:#e8f5e8
+    style BBox fill:#fff3e0
+    style Display fill:#f3e5f5
+```
+
+### 🧮 Processamento Matemático Detalhado
+
+```mermaid
+flowchart LR
+    subgraph "📐 Funções Indicadoras"
+        FuncGen[📏 Geração de Funções<br/>Linhas: f(x) = triangular<br/>Colunas: g(y) = triangular]
+        Vectorize[⚡ Vectorização NumPy<br/>Batch Processing<br/>3-5x Performance]
+        Optimize[🎯 Otimização MSE<br/>Early Stopping < 200<br/>Fallback < 300]
+    end
+    
+    subgraph "🔍 Análise Comparativa"
+        Method1[📏 Método Linhas<br/>768 funções horizontais]
+        Method2[📐 Método Colunas<br/>1024 funções verticais]
+        Method3[🔄 Método Combinado<br/>4 resultados finais]
+    end
+    
+    subgraph "📊 Métricas e Resultados"
+        MSE[📈 Cálculo MSE<br/>Mean Square Error]
+        RMS[📉 Cálculo RMS<br/>Root Mean Square]
+        Success[✅ Taxa Sucesso<br/>Análise Global]
+        Report[📋 Relatório Final<br/>JSON + Visualizações]
+    end
+    
+    FuncGen --> Vectorize
+    Vectorize --> Optimize
+    
+    Optimize --> Method1
+    Optimize --> Method2
+    Optimize --> Method3
+    
+    Method1 --> MSE
+    Method2 --> MSE
+    Method3 --> MSE
+    
+    MSE --> RMS
+    RMS --> Success
+    Success --> Report
+    
+    style FuncGen fill:#e8f5e8
+    style Vectorize fill:#fff9c4
+    style MSE fill:#e1f5fe
+    style Report fill:#f3e5f5
+```
 
 ### 1️⃣ 📐 Parametrização com Funções Indicadoras (Otimizado)
 
@@ -144,7 +266,7 @@ flowchart TD
 ```mermaid
 graph TB
     subgraph "🔄 Pipeline Principal"
-        Main[🚀 main.py<br/>Coordenação Geral]
+        Main[🚀 MainAvaliador.py<br/>Coordenação Geral]
         Import[📥 importa_dados.py<br/>Validação Dataset]
         Choose[🎯 escolher_modelo.py<br/>Seleção Método]
         Process[⚡ Processamento<br/>Análise Imagens]
@@ -229,6 +351,123 @@ gantt
 }
 ```
 
+## 📊 Estrutura de Dados e Fluxo
+
+### 🗃️ Arquitetura de Dados
+
+```mermaid
+erDiagram
+    DATASET ||--o{ IMAGES : contains
+    DATASET {
+        string id PK "Identificador único"
+        string gender "male/female"
+        float weight "Peso corporal"
+        float height "Altura"
+        json body_measurements "Medidas detalhadas"
+    }
+    
+    IMAGES ||--o{ SILHOUETTES : generates
+    IMAGES {
+        string id PK "ID do dataset"
+        string position "front/left"
+        blob image_data "Dados da imagem"
+        int width "Largura original"
+        int height "Altura original"
+    }
+    
+    SILHOUETTES ||--o{ PARAMETERS : optimizes
+    SILHOUETTES {
+        string id PK "ID da silhueta"
+        string method "linhas/colunas/combinado"
+        array mask_data "Máscara segmentada"
+        float mse_score "Pontuação MSE"
+        json bbox_data "Bounding boxes"
+    }
+    
+    PARAMETERS {
+        string silhouette_id FK
+        string param_type "a,b,c,d"
+        float value "Valor otimizado"
+        int function_index "Índice da função"
+        float convergence "Taxa convergência"
+    }
+    
+    RESULTS ||--o{ VISUALIZATIONS : creates
+    RESULTS {
+        string processing_id PK
+        datetime timestamp "Data processamento"
+        string method_used "Método aplicado"
+        json global_stats "Estatísticas globais"
+        float processing_time "Tempo execução"
+    }
+    
+    VISUALIZATIONS {
+        string result_id FK
+        string viz_type "silhouette/bbox/comparison"
+        blob image_output "Visualização gerada"
+        json metadata "Metadados visuais"
+    }
+```
+
+### 🔄 Pipeline de Processamento Completo
+
+```mermaid
+stateDiagram-v2
+    [*] --> Initialization
+    
+    state Initialization {
+        [*] --> LoadData
+        LoadData --> ValidateCSV
+        ValidateCSV --> CheckImages
+        CheckImages --> FilterData
+        FilterData --> [*]
+    }
+    
+    Initialization --> MethodSelection
+    
+    state MethodSelection {
+        [*] --> DisplayMenu
+        DisplayMenu --> UserChoice
+        UserChoice --> ValidateInput
+        ValidateInput --> InitializeModel
+        InitializeModel --> [*]
+    }
+    
+    MethodSelection --> Processing
+    
+    state Processing {
+        [*] --> LoadImages
+        LoadImages --> ApplyParametrization
+        
+        state ApplyParametrization {
+            [*] --> GenerateFunctions
+            GenerateFunctions --> VectorizeOperations
+            VectorizeOperations --> OptimizeMSE
+            OptimizeMSE --> CalculateMetrics
+            CalculateMetrics --> [*]
+        }
+        
+        ApplyParametrization --> DetectBoundingBoxes
+        DetectBoundingBoxes --> GenerateVisualizations
+        GenerateVisualizations --> [*]
+    }
+    
+    Processing --> Results
+    
+    state Results {
+        [*] --> CompileStatistics
+        CompileStatistics --> ExportJSON
+        ExportJSON --> SaveVisualizations
+        SaveVisualizations --> DisplayResults
+        DisplayResults --> [*]
+    }
+    
+    Results --> [*]
+    
+    note right of Processing : ⚡ Vectorização NumPy\n🎯 Early Stopping\n📊 MSE < 200
+    note right of Results : 📋 Relatórios JSON\n🖼️ Visualizações\n📦 Bounding Boxes
+```
+
 ### 📋 Formato de Saída
 
 ```json
@@ -277,16 +516,23 @@ gantt
     section 📦 v0.5.0 - Boxes
         Detecção Bounding Boxes : done, 2025-09-11, 2025-09-11
         Sistema Completo : done, 2025-09-11, 2025-09-11
+        
+    section 🧹 v0.6.0 - Modernização
+        Remoção DeepLabV3 : done, 2025-09-12, 2025-09-12
+        Simplificação Arquitetura : done, 2025-09-12, 2025-09-12
+        MainAvaliador : done, 2025-09-12, 2025-09-12
 ```
 
-### 🎯 Roadmap
+### 🎯 Roadmap Atualizado
 
 ```mermaid
 flowchart LR
     A["v0.1.0<br/>📊 Base de Dados"] --> B["v0.3.0<br/>📐 Parametrização"]
     B --> C["v0.4.0<br/>⚡ Otimização"]
     C --> D["v0.5.0<br/>📦 Bounding Boxes"]
-    D --> E["v0.6.0<br/>🔮 Futuras Melhorias"]
+    D --> E["v0.6.0<br/>🧹 Modernização"]
+    E --> F["v0.7.0<br/>📊 Analytics"]
+    F --> G["v1.0.0<br/>🚀 Release"]
     
     A --> A1["✅ Importação Dados"]
     A --> A2["✅ Estrutura Modular"]
@@ -301,9 +547,21 @@ flowchart LR
     D --> D2["✅ Detecção Automática"]
     D --> D3["✅ Sistema Integrado"]
     
-    E --> E1["🔮 Análise Estatística Avançada"]
-    E --> E2["🔮 Exportação Multi-formato"]
-    E --> E3["🔮 Interface Gráfica"]
+    E --> E1["✅ Arquitetura Limpa"]
+    E --> E2["✅ Foco Parametrização"]
+    E --> E3["✅ MainAvaliador"]
+    
+    F --> F1["🔮 Análise Estatística"]
+    F --> F2["🔮 Dashboard Web"]
+    F --> F3["🔮 API REST"]
+    
+    G --> G1["🔮 Interface Gráfica"]
+    G --> G2["🔮 Deploy Cloud"]
+    G --> G3["🔮 Documentação Final"]
+    
+    style E fill:#90EE90
+    style F fill:#FFE4B5
+    style G fill:#F0E68C
 ```
 
 ## 📊 Métricas e Validação
@@ -348,16 +606,16 @@ CONFIG = {
 
 ```bash
 # Executar com limite de registros
-python main.py --limit 5
+python MainAvaliador.py --limit 5
 
 # Executar método específico
-python main.py --method linhas
+python MainAvaliador.py --method linhas
 
 # Modo debug
-python main.py --debug
+python MainAvaliador.py --debug
 
 # Executar análise completa
-python main.py --full-analysis
+python MainAvaliador.py --full-analysis
 ```
 
 ## 📚 Módulos Especializados
@@ -368,7 +626,7 @@ python main.py --full-analysis
 mindmap
     root((🏗️ INOVIA))
         📊 Core
-            main.py
+            MainAvaliador.py
             importa_dados.py
             escolher_modelo.py
         📐 Parametrização
@@ -385,19 +643,96 @@ mindmap
 
 ### 📁 Organização de Arquivos
 
+```mermaid
+graph TB
+    subgraph "📂 Projeto INOVIA"
+        Main[🚀 MainAvaliador.py<br/>Ponto de Entrada Principal]
+        
+        subgraph "📊 Core System"
+            Import[📥 importa_dados.py<br/>Gerenciamento Dataset]
+            Choose[🎯 escolher_modelo.py<br/>Seleção Método]
+        end
+        
+        subgraph "📐 Parametrização Engine"
+            Model[🧠 modelo_segmentacao_parametrizacao.py<br/>Coordenação Científica]
+            Engine[⚡ segmentacao_imagens_parametrizacao_indicadora.py<br/>Motor Matemático]
+        end
+        
+        subgraph "📦 Utilities"
+            BBox[🔍 Bounding_box.py<br/>Detecção Regiões]
+            Display1[🖼️ exibicao_imagens_parametrizadas.py<br/>Visualização Silhuetas]
+            Display2[📦 exibicao_BBox_imagens.py<br/>Visualização Boxes]
+            Export[📋 exportacao_parametrizacao.py<br/>Exportação Resultados]
+        end
+        
+        subgraph "📋 Configuration"
+            Req[📄 requirements.txt<br/>Dependências]
+            Change[📝 CHANGELOG.md<br/>Histórico Versões]
+            Read[📖 README.md<br/>Documentação]
+        end
+        
+        subgraph "💾 Output"
+            Data[📁 dados_analisados/<br/>Resultados JSON]
+            Cache[🗂️ __pycache__/<br/>Cache Python]
+        end
+    end
+    
+    Main --> Import
+    Main --> Choose
+    Choose --> Model
+    Model --> Engine
+    Engine --> BBox
+    BBox --> Display1
+    BBox --> Display2
+    Engine --> Export
+    Export --> Data
+    
+    style Main fill:#e3f2fd
+    style Engine fill:#e8f5e8
+    style BBox fill:#fff3e0
+    style Data fill:#f3e5f5
 ```
-📂 Projeto INOVIA/
-├── 🚀 main.py                                    # Ponto de entrada
-├── 📥 importa_dados.py                          # Carregamento dados
-├── 🎯 escolher_modelo.py                        # Seleção método
-├── 📐 modelo_segmentacao_parametrizacao.py      # Modelo principal
-├── 🧮 segmentacao_imagens_parametrizacao_indicadora.py  # Engine matemático
-├── 📦 Bounding_box.py                           # Detecção regiões
-├── 🖼️ exibicao_*.py                             # Visualizações
-├── 📋 exportacao_parametrizacao.py             # Exportação
-├── 📚 requirements.txt                          # Dependências
-├── 📋 CHANGELOG.md                              # Histórico
-└── 📖 README.md                                 # Documentação
+
+### 🔧 Dependências e Tecnologias
+
+```mermaid
+mindmap
+    root((🛠️ Stack Tecnológico))
+        🔬 Científico
+            NumPy
+                Operações Matriciais
+                Vectorização
+                Performance Extrema
+            SciPy
+                Funções Matemáticas
+                Otimização
+                Estatísticas
+            Pandas
+                Manipulação Dados
+                DataFrames
+                CSV Processing
+        🖼️ Imagens
+            OpenCV
+                Processamento Imagens
+                Bounding Boxes
+                Morfologia
+            Matplotlib
+                Visualizações
+                Gráficos
+                Plotagem Científica
+            PIL/Pillow
+                Manipulação Básica
+                Formatos Diversos
+                Redimensionamento
+        🔧 Sistema
+            pathlib
+                Gerenciamento Paths
+                Cross-Platform
+            json
+                Serialização
+                Resultados
+            warnings
+                Tratamento Avisos
 ```
 
 ## 🤝 Contribuição
@@ -432,5 +767,12 @@ Este projeto está licenciado sob a **Licença MIT** - veja o arquivo [LICENSE](
 
 ---
 
-**🚀 Projeto INOVIA v0.5.0** - Sistema de Segmentação Inteligente  
+**🚀 Projeto INOVIA v0.6.0** - Sistema de Segmentação Inteligente  
 Desenvolvido com ❤️ para análise científica de imagens corporais sintéticas.
+
+### 📈 Roadmap v0.7.0+
+- **🌐 Interface Web**: Streamlit/Dash para democratização do acesso
+- **📱 Mobile First**: Compatibilidade total com dispositivos móveis
+- **☁️ Cloud Native**: Deploy em AWS/Azure/GCP
+- **🤖 AI Avançada**: Integração com modelos de visão computacional
+- **📊 Analytics**: Dashboard interativo para análise de tendências

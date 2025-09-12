@@ -22,20 +22,22 @@ O Projeto INOVIA evoluiu através de uma metodologia ágil e iterativa, com cada
 | `v0.3.0` | 2025-09-10 | 🔗 **Extensão Completa** | Segmentação bidimensional |
 | `v0.4.0` | 2025-09-10 | 🌟 **Multidimensional** | Quatro métodos especializados |
 | `v0.5.0` | 2025-09-10 | 📦 **Bounding Boxes** | Detecção automática de retângulos |
+| `v0.6.0` | 2025-09-12 | 🧹 **Modernização** | Sistema focado em parametrização |
 
 ### 🏆 Principais Conquistas
 
 - **📈 Performance**: Aumento de 500% na velocidade de processamento
 - **🎯 Precisão**: MSE consistentemente abaixo de 200 em todos os métodos
-- **� Flexibilidade**: 6 algoritmos diferentes para diferentes necessidades
+- **🔧 Flexibilidade**: 4 algoritmos de parametrização especializados
 - **📊 Análise**: Métricas completas com visualizações especializadas
-- **📦 Inovação**: Primeiro sistema com detecção automática de bounding boxes
+- **📦 Inovação**: Sistema completo com detecção automática de bounding boxes
+- **🧹 Modernização**: Arquitetura simplificada e focada
 
 ---
 
 ## 🚀 Versões Detalhadas
 
-### [0.6.0] - 2025-09-11 - 🧹 Modernização e Limpeza Modular
+### [0.6.0] - 2025-09-12 - 🧹 Modernização e Limpeza Modular
 
 > **🧹 REFATORAÇÃO PRINCIPAL:** Remoção completa do modelo DeepLabV3 obsoleto para simplificação do sistema
 
@@ -75,6 +77,14 @@ O modelo DeepLabV3 foi removido pelos seguintes motivos:
 - **🔧 Código Mais Limpo**: Arquitetura simplificada e focada
 - **📚 Documentação Clara**: Foco único no método principal
 - **🚀 Performance Otimizada**: Sistema dedicado à parametrização
+
+#### ✨ Melhorias na Interface
+
+- **🎮 MainAvaliador.py**: Interface de usuário aprimorada para seleção de registros
+- **📊 Escolha Dinâmica**: Usuário pode definir quantos IDs analisar (padrão: 3)
+- **⌨️ Entrada Flexível**: Suporte para Enter como valor padrão
+- **🔍 Validação Robusta**: Verificação rigorosa de entradas do usuário
+- **🎯 Feedback Claro**: Mensagens de confirmação e validação melhoradas
 
 ### [0.5.0] - 2025-09-10 - 📦 Detecção de Bounding Boxes nas Silhuetas
 
@@ -1069,13 +1079,13 @@ Jornada de Excelência em 6 Versões:
 
 **Sistema de Segmentação Inteligente com Evolução Contínua**
 
-[![Versão](https://img.shields.io/badge/Versão-v0.5.0-blue?style=for-the-badge)](CHANGELOG.md)
+[![Versão](https://img.shields.io/badge/Versão-v0.6.0-blue?style=for-the-badge)](CHANGELOG.md)
 [![Python](https://img.shields.io/badge/Python-3.8+-green?style=for-the-badge)](https://python.org)
 [![Performance](https://img.shields.io/badge/Performance-500%25+-orange?style=for-the-badge)](#)
 [![Qualidade](https://img.shields.io/badge/MSE-%3C200-red?style=for-the-badge)](#)
 
-**📅 Última Atualização**: 11 de Setembro de 2025  
-**🔖 Versão Atual**: v0.5.0 - Detecção de Bounding Boxes  
+**📅 Última Atualização**: 12 de Setembro de 2025  
+**🔖 Versão Atual**: v0.6.0 - Sistema Modernizado  
 **🔮 Próxima Release**: v0.6.0 - Analytics Avançados  
 
 📋 [README.md](README.md) | 🐛 [Issues](../../issues) | 🤝 [Contributing](../../pulls) | 📧 [Contato](mailto:danilo.rigitano@inovia.com)
