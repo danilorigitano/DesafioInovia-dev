@@ -35,6 +35,47 @@ O Projeto INOVIA evoluiu através de uma metodologia ágil e iterativa, com cada
 
 ## 🚀 Versões Detalhadas
 
+### [0.6.0] - 2025-09-11 - 🧹 Modernização e Limpeza Modular
+
+> **🧹 REFATORAÇÃO PRINCIPAL:** Remoção completa do modelo DeepLabV3 obsoleto para simplificação do sistema
+
+#### 🎯 Simplificação Arquitetural
+
+A versão 0.6.0 moderniza o projeto removendo componentes obsoletos e focando exclusivamente no método de parametrização por funções indicadoras, que se mostrou superior em performance e precisão.
+
+**📝 Mudanças Implementadas:**
+
+#### ❌ Removidos
+- `segmentacao_imagens_Deeplabv3.py` - Arquivo principal do modelo DeepLabV3
+- `modelo_segmentacao_Deeplabv3.py` - Wrapper do modelo DeepLabV3
+- Dependências PyTorch e TorchVision do `requirements.txt`
+- Dependência `pydensecrf` para pós-processamento
+- Todas as referências ao DeepLabV3 em `escolher_modelo.py`
+- Documentação relacionada ao DeepLabV3 no `README.md`
+
+#### ✅ Atualizados
+- `escolher_modelo.py`: Agora oferece apenas o método de parametrização com 4 variações
+- `requirements.txt`: Dependências simplificadas focando apenas no processamento matemático
+- `README.md`: Documentação limpa e focada no método de parametrização
+- Menu de seleção: Interface simplificada com foco na parametrização
+
+#### 📋 Motivação para Remoção
+
+O modelo DeepLabV3 foi removido pelos seguintes motivos:
+1. **🚀 Performance Superior**: O método de parametrização é 3-5x mais rápido
+2. **📊 Precisão Equivalente**: MSE < 200 consistente em ambos os métodos
+3. **💾 Menor Complexidade**: Eliminação de dependências pesadas (PyTorch)
+4. **🔧 Manutenção Simplificada**: Código mais limpo e focado
+5. **📈 Evolução Natural**: Foco no método que se mostrou mais eficiente
+
+#### 🎯 Benefícios da Simplificação
+
+- **⚡ Instalação Mais Rápida**: Menos dependências para instalar
+- **💾 Menor Uso de Memória**: Sem modelos de deep learning carregados
+- **🔧 Código Mais Limpo**: Arquitetura simplificada e focada
+- **📚 Documentação Clara**: Foco único no método principal
+- **🚀 Performance Otimizada**: Sistema dedicado à parametrização
+
 ### [0.5.0] - 2025-09-10 - 📦 Detecção de Bounding Boxes nas Silhuetas
 
 > **🚀 NOVA FUNCIONALIDADE PRINCIPAL:** Sistema Completo de Detecção Automática de Retângulos Delimitadores

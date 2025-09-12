@@ -567,8 +567,9 @@ class ModeloSegmentacaoParametrizacao:
         }
         
         # 🎨 NOVA FUNCIONALIDADE: Exibir figuras com bounding box imediatamente após processamento
-        if sucesso_geral:
-            self._exibir_figuras_com_bounding_box(resultado_variavel)
+        # DESATIVADO: Comentado para não interromper o processamento - as imagens são exibidas no final
+        # if sucesso_geral:
+        #     self._exibir_figuras_com_bounding_box(resultado_variavel)
         
         logger.info(f"✓ Variável {variavel}: {resultado_variavel['imagens_sucesso']}/{resultado_variavel['total_imagens']} imagens processadas (MSE: {metricas_resumo['mse_medio']:.3f}, RMS: {metricas_resumo['rms_medio']:.3f})")
         

@@ -27,11 +27,11 @@ FUNCIONALIDADES:
 
 FORMATO DOS ARQUIVOS:
 ====================
-- {id}--front-vetorcoluna.txt
-- {id}--front-vetorlinha.txt  
-- {id}--left-vetorcoluna.txt
-- {id}--left-vetorlinha.txt
-- {id}--boundbox.txt
+- {id}--front--vetorcoluna.txt
+- {id}--front--vetorlinha.txt  
+- {id}--left--vetorcoluna.txt
+- {id}--left--vetorlinha.txt
+- {id}--boundingbox.txt
 
 EXEMPLO DE USO:
 ==============
@@ -216,13 +216,13 @@ class ExportadorParametrizacao:
             
             # Verificar se vetor_linhas existe e não está vazio (tratando arrays numpy)
             if vetor_linhas is not None and len(vetor_linhas) > 0:
-                nome_arquivo_linhas = f"{id_limpo}--{tipo_imagem}-vetorlinha.txt"
+                nome_arquivo_linhas = f"{id_limpo}--{tipo_imagem}--vetorlinha.txt"
                 sucesso_linhas = self._salvar_vetor_txt(vetor_linhas, nome_arquivo_linhas, mostrar_log)
                 sucesso_total = sucesso_total and sucesso_linhas
             
             # Verificar se vetor_colunas existe e não está vazio (tratando arrays numpy)
             if vetor_colunas is not None and len(vetor_colunas) > 0:
-                nome_arquivo_colunas = f"{id_limpo}--{tipo_imagem}-vetorcoluna.txt"
+                nome_arquivo_colunas = f"{id_limpo}--{tipo_imagem}--vetorcoluna.txt"
                 sucesso_colunas = self._salvar_vetor_txt(vetor_colunas, nome_arquivo_colunas, mostrar_log)
                 sucesso_total = sucesso_total and sucesso_colunas
         
