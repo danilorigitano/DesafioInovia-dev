@@ -21,17 +21,6 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 class ModeloSegmentacaoParametrizacao:
-    """
-    Classe responsável por coordenar o processamento de segmentação de imagens
-    usando exclusivamente o método de Parametrização com Funções Indicadoras.
-    
-    Características:
-    - Método otimizado para velocidade e eficiência
-    - 382 funções indicadoras (uma por linha)
-    - Redimensionamento para 512x382 pixels
-    - Pós-processamento morfológico avançado
-    - Métricas de qualidade (MSE e RMS)
-    """
     
     def __init__(self, dataframe: pd.DataFrame,
                  target_width: int = 512,
@@ -41,19 +30,7 @@ class ModeloSegmentacaoParametrizacao:
                  enhance_contrast: bool = True,
                  num_workers: int = 1,
                  metodo_segmentacao: str = "linhas"):
-        """
-        Inicializa o modelo de segmentação por parametrização
-        
-        Args:
-            dataframe (pd.DataFrame): DataFrame com os dados estruturados contendo a coluna 'id'
-            target_width (int): Largura alvo para redimensionamento (padrão: 512)
-            target_height (int): Altura alvo para redimensionamento (padrão: 382)
-            morph_kernel_size (int): Tamanho do kernel para operações morfológicas
-            min_area (int): Área mínima para filtrar ruídos (pixels)
-            enhance_contrast (bool): Se deve aplicar melhoria de contraste
-            num_workers (int): Número de workers para processamento paralelo (futuro)
-            metodo_segmentacao (str): Método de segmentação ('linhas', 'colunas', 'combinado')
-        """
+
         self.dataframe = dataframe.copy()
         self.target_width = target_width
         self.target_height = target_height
@@ -115,12 +92,6 @@ class ModeloSegmentacaoParametrizacao:
 
 
     def _exportar_variavel_individual(self, resultado_variavel: Dict) -> None:
-        """
-        Exporta os dados de uma variável individual imediatamente após processamento.
-        
-        Args:
-            resultado_variavel (Dict): Dados de resultado de uma variável processada
-        """
         try:
             # Importar o exportador apenas quando necessário
             from exportacao_parametrizacao import ExportadorParametrizacao
@@ -165,15 +136,6 @@ class ModeloSegmentacaoParametrizacao:
         logger.info(f"✓ DataFrame validado: {len(self.dataframe)} registros com coluna 'id'")
     
     def _verificar_pasta_imagem(self, variavel: str) -> Tuple[bool, Dict[str, Path]]:
-        """
-        Verifica se a pasta da variável existe e contém os arquivos necessários
-        
-        Args:
-            variavel (str): Nome da pasta (ID do registro)
-            
-        Returns:
-            Tuple[bool, Dict[str, Path]]: (True se válida, dicionário com caminhos dos arquivos)
-        """
         pasta_variavel = self.pasta_imagens / variavel
         
         if not pasta_variavel.exists():
@@ -205,17 +167,7 @@ class ModeloSegmentacaoParametrizacao:
         return True, arquivos
     
     def _processar_imagem(self, caminho_imagem: Path, tipo_imagem: str, variavel: str) -> Dict:
-        """
-        Processa uma única imagem usando parametrização com funções indicadoras
-        
-        Args:
-            caminho_imagem (Path): Caminho para a imagem
-            tipo_imagem (str): Tipo da imagem ('front' ou 'left')
-            variavel (str): ID da variável/pasta
-            
-        Returns:
-            Dict: Resultado do processamento
-        """
+
         inicio_tempo = time.time()
         
         try:
@@ -297,15 +249,6 @@ class ModeloSegmentacaoParametrizacao:
             }
     
     def _calcular_estatisticas_mascara(self, mascara_binaria: np.ndarray) -> Dict:
-        """
-        Calcula estatísticas detalhadas da máscara binária
-        
-        Args:
-            mascara_binaria (np.ndarray): Máscara binária resultante
-            
-        Returns:
-            Dict: Estatísticas da máscara
-        """
         try:
             if mascara_binaria is None:
                 return {}
@@ -365,17 +308,6 @@ class ModeloSegmentacaoParametrizacao:
             return {}
     
     def _processar_bounding_box(self, resultado_segmentacao: Dict, variavel: str, tipo_imagem: str) -> Dict:
-        """
-        Processa bounding box para o resultado da segmentação.
-        
-        Args:
-            resultado_segmentacao (Dict): Resultado da segmentação
-            variavel (str): ID da variável
-            tipo_imagem (str): Tipo da imagem ('front' ou 'left')
-            
-        Returns:
-            Dict: Dados do bounding box processado
-        """
         try:
             logger.debug(f"🎯 Processando bounding box para {variavel} - {tipo_imagem}")
             
@@ -425,24 +357,13 @@ class ModeloSegmentacaoParametrizacao:
             return {'sucesso': False, 'erro': str(e)}
     
     def _salvar_bounding_box_imediato(self, bounding_box_dados: Dict, variavel: str, tipo_imagem: str) -> bool:
-        """
-        Salva imediatamente o arquivo de bounding box no formato solicitado.
-        
-        Args:
-            bounding_box_dados (Dict): Dados do bounding box
-            variavel (str): ID da variável
-            tipo_imagem (str): Tipo da imagem ('front' ou 'left')
-            
-        Returns:
-            bool: True se salvou com sucesso
-        """
+
         try:
             if not bounding_box_dados.get('sucesso', False):
                 logger.debug(f"⚠️ Bounding box sem sucesso para {variavel} - {tipo_imagem}, não salvando arquivo")
                 return False
             
             # Manter o ID original sem remover prefixos
-            # Isso evita duplicação de arquivos já que syn_f000000-0-Pre e 000000-0-Pre 
             # devem gerar arquivos diferentes
             id_limpo = variavel
             
@@ -496,23 +417,15 @@ class ModeloSegmentacaoParametrizacao:
                         f.write(f"{x4}\t{y4}\n")  # Inferior esquerdo
                         f.write("\n")  # Linha em branco entre bounding boxes
             
-            logger.info(f"✅ Bounding box salvo: {nome_arquivo} ({len(bboxes)} caixas)")
+            logger.info(f"Bounding box salvo: {nome_arquivo} ({len(bboxes)} caixas)")
             return True
             
         except Exception as e:
-            logger.error(f"❌ Erro ao salvar bounding box para {variavel} - {tipo_imagem}: {e}")
+            logger.error(f"Erro ao salvar bounding box para {variavel} - {tipo_imagem}: {e}")
             return False
     
     def processar_variavel(self, variavel: str) -> Dict:
-        """
-        Processa todas as imagens de uma variável específica
-        
-        Args:
-            variavel (str): ID da variável a ser processada
-            
-        Returns:
-            Dict: Resultado do processamento da variável
-        """
+
         logger.info(f"Processando variável: {variavel}")
         inicio_tempo = time.time()
         
@@ -566,10 +479,6 @@ class ModeloSegmentacaoParametrizacao:
             'metricas_resumo': metricas_resumo
         }
         
-        # 🎨 NOVA FUNCIONALIDADE: Exibir figuras com bounding box imediatamente após processamento
-        # DESATIVADO: Comentado para não interromper o processamento - as imagens são exibidas no final
-        # if sucesso_geral:
-        #     self._exibir_figuras_com_bounding_box(resultado_variavel)
         
         logger.info(f"✓ Variável {variavel}: {resultado_variavel['imagens_sucesso']}/{resultado_variavel['total_imagens']} imagens processadas (MSE: {metricas_resumo['mse_medio']:.3f}, RMS: {metricas_resumo['rms_medio']:.3f})")
         
@@ -583,14 +492,14 @@ class ModeloSegmentacaoParametrizacao:
             resultado_variavel (Dict): Resultado do processamento da variável
         """
         try:
-            logger.info(f"🎨 Exibindo figuras com bounding box para {resultado_variavel.get('variavel', 'N/A')}")
+            logger.info(f"Exibindo figuras com bounding box para {resultado_variavel.get('variavel', 'N/A')}")
             
             # Importar visualizador se disponível
             try:
                 from exibicao_BBox_imagens import ExibicaoBBoxImagens
                 visualizador = ExibicaoBBoxImagens()
             except ImportError:
-                logger.warning("⚠️ Módulo de exibição de bounding box não disponível")
+                logger.warning("Módulo de exibição de bounding box não disponível")
                 return
             
             # Processar cada imagem da variável
@@ -603,7 +512,7 @@ class ModeloSegmentacaoParametrizacao:
                 bounding_box_dados = resultado_imagem.get('bounding_box_dados', {})
                 
                 if not bounding_box_dados.get('sucesso', False):
-                    logger.debug(f"⚠️ Sem bounding box para exibir - {variavel} {tipo_imagem}")
+                    logger.debug(f"Sem bounding box para exibir - {variavel} {tipo_imagem}")
                     continue
                 
                 # Exibir figura com bounding box
@@ -623,18 +532,8 @@ class ModeloSegmentacaoParametrizacao:
         except Exception as e:
             logger.warning(f"⚠️ Erro na exibição geral de figuras com bounding box: {e}")
     
-    def processar_dataset(self, limite_registros: Optional[int] = None,
-                         exibir_progresso: bool = True) -> Dict:
-        """
-        Processa todo o dataset usando parametrização com funções indicadoras
-        
-        Args:
-            limite_registros (int, optional): Limitar o número de registros processados
-            exibir_progresso (bool): Se deve exibir progresso detalhado
-            
-        Returns:
-            Dict: Resultado geral do processamento
-        """
+    def processar_dataset(self, limite_registros: Optional[int] = None, exibir_progresso: bool = True) -> Dict:
+
         logger.info("🚀 Iniciando processamento do dataset com Parametrização")
         inicio_tempo_total = time.time()
         
@@ -733,20 +632,8 @@ class ModeloSegmentacaoParametrizacao:
             'throughput_imagens_por_minuto': (total_imagens / (tempo_total / 60)) if tempo_total > 0 else 0
         }
     
-    def salvar_resultados(self, caminho_saida: Optional[str] = None,
-                         incluir_mascaras: bool = False,
-                         incluir_metricas_detalhadas: bool = True) -> str:
-        """
-        Salva os resultados do processamento em arquivo
-        
-        Args:
-            caminho_saida (str, optional): Caminho para salvar os resultados
-            incluir_mascaras (bool): Se deve incluir as máscaras binárias (aumenta muito o tamanho)
-            incluir_metricas_detalhadas (bool): Se deve incluir métricas detalhadas por linha
-            
-        Returns:
-            str: Caminho do arquivo salvo
-        """
+    def salvar_resultados(self, caminho_saida: Optional[str] = None, incluir_mascaras: bool = False, incluir_metricas_detalhadas: bool = True) -> str:
+
         if not self.resultados:
             logger.warning("⚠️  Nenhum resultado para salvar")
             return ""
@@ -835,18 +722,6 @@ class ModeloSegmentacaoParametrizacao:
             return ""
     
     def visualizar_amostra_resultados(self, num_amostras: int = 3, tipo_visualizacao: str = 'auto'):
-        """
-        Visualiza uma amostra dos resultados processados.
-        
-        NOTA: Visualização agora delegada ao módulo exibicao_imagens_parametrizadas.py
-        conforme separação de responsabilidades solicitada.
-        
-        NOVO: Integração automática com detecção de bounding boxes
-        
-        Args:
-            num_amostras (int): Número de amostras a visualizar
-            tipo_visualizacao (str): 'auto', 'simples', 'completo', 'metricas' ou '4_resultados'
-        """
         try:
             from exibicao_imagens_parametrizadas import ExibicaoImagensParametrizadas
             
@@ -906,15 +781,6 @@ class ModeloSegmentacaoParametrizacao:
             print(f"❌ Erro na visualização: {e}")
     
     def _processar_bounding_boxes(self, resultado_segmentacao: Dict) -> Dict:
-        """
-        Processa bounding boxes para um resultado de segmentação.
-        
-        Args:
-            resultado_segmentacao (Dict): Resultado da segmentação
-            
-        Returns:
-            Dict: Resultado com bounding boxes adicionadas
-        """
         try:
             from Bounding_box import BoundingBoxDetector
             
