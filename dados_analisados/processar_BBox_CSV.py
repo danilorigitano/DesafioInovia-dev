@@ -65,8 +65,10 @@ def process_boundingbox_files():
         coordinates = extract_coordinates_from_file(file_path)
         if len(coordinates) >= 8:  # We need at least 4 points (x1,y1,x2,y2,x3,y3,x4,y4)
             file_id = extract_id_from_filename(file_path.name)
-            # According to the request: Id, x1, y1, x2, y2 (taking first two points)
-            row = [file_id, coordinates[0], coordinates[1], coordinates[2], coordinates[3]]
+            # Extract: Id, x1, x2, y2, y3
+            # coordinates = [x1, y1, x2, y2, x3, y3, x4, y4]
+            # So: x1=coordinates[0], x2=coordinates[2], y2=coordinates[3], y3=coordinates[5]
+            row = [file_id, coordinates[0], coordinates[2], coordinates[3], coordinates[5]]
             front_data.append(row)
     
     # Process left files
@@ -75,24 +77,28 @@ def process_boundingbox_files():
         coordinates = extract_coordinates_from_file(file_path)
         if len(coordinates) >= 8:  # We need at least 4 points (x1,y1,x2,y2,x3,y3,x4,y4)
             file_id = extract_id_from_filename(file_path.name)
-            # According to the request: Id, x1, y1, x2, y2 (taking first two points)
-            row = [file_id, coordinates[0], coordinates[1], coordinates[2], coordinates[3]]
+            # Extract: Id, x1, x2, y2, y3
+            # coordinates = [x1, y1, x2, y2, x3, y3, x4, y4]
+            # So: x1=coordinates[0], x2=coordinates[2], y2=coordinates[3], y3=coordinates[5]
+            row = [file_id, coordinates[0], coordinates[2], coordinates[3], coordinates[5]]
             left_data.append(row)
     
     # Sort data by ID
     front_data.sort(key=lambda x: x[0])
     left_data.sort(key=lambda x: x[0])
     
-    # Write front CSV
-    with open('DadosmedidosCSV--front--boundingbox.csv', 'w', newline='', encoding='utf-8') as csvfile:
+    # Write front CSV into the same directory as this script
+    front_csv = current_dir / 'DadosmedidosCSV--front--boundingbox.csv'
+    with open(front_csv, 'w', newline='', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile)
-        writer.writerow(['Id', 'x1', 'y1', 'x2', 'y2'])  # Header
+        writer.writerow(['Id', 'x1', 'x2', 'y2', 'y3'])  # Header corrigido
         writer.writerows(front_data)
-    
-    # Write left CSV
-    with open('DadosmedidosCSV--left--boundingbox.csv', 'w', newline='', encoding='utf-8') as csvfile:
+
+    # Write left CSV into the same directory as this script
+    left_csv = current_dir / 'DadosmedidosCSV--left--boundingbox.csv'
+    with open(left_csv, 'w', newline='', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile)
-        writer.writerow(['Id', 'x1', 'y1', 'x2', 'y2'])  # Header
+        writer.writerow(['Id', 'x1', 'x2', 'y2', 'y3'])  # Header corrigido
         writer.writerows(left_data)
     
     print(f"Created CSV files:")
