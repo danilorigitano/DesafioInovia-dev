@@ -2,6 +2,12 @@ import csv
 import numpy as np
 from pathlib import Path
 
+# Optional pandas import for nicer DataFrame display; fallback to csv reader if unavailable
+try:
+    import pandas as pd
+except Exception:
+    pd = None
+
 def read_csv(file_path):
     """Lê um arquivo CSV e retorna os dados como lista de listas."""
     data = []
@@ -265,5 +271,116 @@ def process_parametrization():
     print("[DONE] Processamento concluído!")
     print(f"{'='*60}")
 
+def integrate_dados_relevantes_with_medidas(medidas_csv_name='medidas_dados_sinteticos.csv',
+                                           relevantes_csv_name='DadosRelevantes.csv',
+                                           output_csv_name='DadosRelevantesIntegrados.csv'):
+    """
+    Integra o arquivo `DadosRelevantes.csv` com `medidas_dados_sinteticos.csv`
+    buscando as colunas extras (height,chest_circ,waist_circ,hip_circ,thigh_circ,
+    knee_circ,calf_circ,abd_circ,neck_circ,biceps_circ,split) pelo campo `id`.
+
+    Retorna o DataFrame `Integrado` (pandas) e grava o CSV `DadosRelevantesIntegrados.csv`
+    na mesma pasta do módulo.
+    """
+    current_dir = Path(__file__).parent
+
+    medidas_path = current_dir.parent / medidas_csv_name
+    relevantes_path = current_dir / relevantes_csv_name
+    output_path = current_dir / output_csv_name
+
+    if pd is None:
+        raise ImportError('pandas é necessário para esta função. Instale pandas e tente novamente.')
+
+    if not medidas_path.exists():
+        raise FileNotFoundError(f"Arquivo não encontrado: {medidas_path}")
+    if not relevantes_path.exists():
+        raise FileNotFoundError(f"Arquivo não encontrado: {relevantes_path}")
+
+    # Lê os CSVs com pandas
+    medidas_df = pd.read_csv(medidas_path, encoding='utf-8')
+    relevantes_df = pd.read_csv(relevantes_path, encoding='utf-8')
+
+    # Detecta automaticamente o nome da coluna de ID (p.ex. 'id' ou 'Id') e normaliza para 'id'
+    def _find_id_col(df):
+        for c in df.columns:
+            if str(c).strip().lower() == 'id':
+                return c
+        # fallback: considera a primeira coluna como ID
+        return df.columns[0]
+
+    medidas_id_col = _find_id_col(medidas_df)
+    relevantes_id_col = _find_id_col(relevantes_df)
+
+    medidas_df[medidas_id_col] = medidas_df[medidas_id_col].astype(str).str.strip()
+    relevantes_df[relevantes_id_col] = relevantes_df[relevantes_id_col].astype(str).str.strip()
+
+    # Renomeia para 'id' para unificar as operações de merge
+    if medidas_id_col != 'id':
+        medidas_df = medidas_df.rename(columns={medidas_id_col: 'id'})
+    if relevantes_id_col != 'id':
+        relevantes_df = relevantes_df.rename(columns={relevantes_id_col: 'id'})
+
+    # Seleciona somente as colunas de medidas extras esperadas (se existirem)
+    expected_cols = ['height','chest_circ','waist_circ','hip_circ','thigh_circ',
+                     'knee_circ','calf_circ','abd_circ','neck_circ','biceps_circ','split']
+    present_cols = [c for c in expected_cols if c in medidas_df.columns]
+
+    if len(present_cols) == 0:
+        raise ValueError(f"Nenhuma das colunas esperadas encontradas em {medidas_path}: {expected_cols}")
+
+    # Filtra medidas_df apenas para ids que aparecem em relevantes_df, usando intersection/is in
+    ids_medidas = pd.Index(medidas_df['id'].unique())
+    ids_relevantes = pd.Index(relevantes_df['id'].unique())
+    common_ids = ids_medidas.intersection(ids_relevantes)
+
+    if common_ids.empty:
+        print('[WARN] Nenhuma correspondência de IDs encontrada entre os arquivos.')
+
+    medidas_filtradas = medidas_df[medidas_df['id'].isin(common_ids)].copy()
+
+    # Faz merge (left) dos dados relevantes com as medidas (mantendo a ordem de relevantes_df)
+    integrado_df = relevantes_df.merge(medidas_filtradas[['id'] + present_cols], on='id', how='left')
+
+    # Salva arquivo integrado
+    try:
+        integrado_df.to_csv(output_path, index=False, encoding='utf-8')
+        print(f"[SAVED] Arquivo integrado salvo em: {output_path}")
+    except Exception as e:
+        print(f"[ERROR] Falha salvando arquivo integrado: {e}")
+
+    # Disponibiliza o DataFrame como variável global para uso interativo
+    globals()['Integrado'] = integrado_df
+    return integrado_df
+
 if __name__ == "__main__":
-    process_parametrization()
+    # Por padrão exibe apenas o DataFrame de `DadosRelevantes.csv` quando executado diretamente.
+    def show_dados_relevantes():
+        current_dir = Path(__file__).parent
+        csv_file = current_dir / 'DadosRelevantes.csv'
+        if not csv_file.exists():
+            print(f"[ERROR] Arquivo não encontrado: {csv_file}")
+            raise SystemExit(1)
+
+        if pd is not None:
+            try:
+                df = pd.read_csv(csv_file, encoding='utf-8')
+                print(df)
+                return df
+            except Exception as e:
+                print(f"[WARN] Falha lendo com pandas: {e} - tentando csv.reader")
+
+        # Fallback: leitura simples com csv.reader
+        data = read_csv(csv_file)
+        for row in data:
+            print(','.join(map(str, row)))
+        return data
+
+    show_dados_relevantes()
+    # Tenta integrar com medidas (arquivo medidas_dados_sinteticos.csv está na pasta parent)
+    try:
+        integrated = integrate_dados_relevantes_with_medidas()
+        if integrated is not None:
+            print('\n[Integrado] Resultado da integração:')
+            print(integrated.head(20))
+    except Exception as e:
+        print(f"[WARN] Integração não realizada: {e}")
