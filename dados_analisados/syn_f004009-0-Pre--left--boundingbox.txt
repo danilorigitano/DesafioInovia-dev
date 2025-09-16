@@ -1,0 +1,12 @@
+# Bounding Boxes - syn_f004009-0-Pre--left--boundingbox.txt
+# Total de bounding boxes: 1
+# Formato: x	y (coordenadas dos 4 cantos do retângulo)
+# Para cada bbox: canto_superior_esquerdo, superior_direito, inferior_direito, inferior_esquerdo
+#======================================================================
+
+# Bounding Box 1
+260	113
+565	113
+565	717
+260	717
+

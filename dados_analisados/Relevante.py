@@ -99,18 +99,18 @@ def process_parametrization():
         # Lê dados do bounding box
         bbox_file = current_dir / bbox_files[view]
         if not bbox_file.exists():
-            print(f"❌ Arquivo não encontrado: {bbox_file}")
+            print(f"[ERROR] Arquivo não encontrado: {bbox_file}")
             continue
             
         bbox_data = read_csv(bbox_file)
         if len(bbox_data) < 2:
-            print(f"❌ Arquivo bbox vazio ou sem dados: {bbox_file}")
+            print(f"[ERROR] Arquivo bbox vazio ou sem dados: {bbox_file}")
             continue
             
         bbox_header = bbox_data[0]
         bbox_rows = bbox_data[1:]
         
-        print(f"📊 Cabeçalho bbox: {bbox_header}")
+        print(f"[INFO] Cabeçalho bbox: {bbox_header}")
         
         # Cria dicionário de bounding boxes por ID (normaliza IDs removendo sufixo --front/--left)
         bbox_dict = {}
@@ -128,17 +128,17 @@ def process_parametrization():
                     invalid_rows += 1
                     continue
         
-        print(f"📦 BBox carregados para {view}: {len(bbox_dict)} registros válidos")
+        print(f"[OK] BBox carregados para {view}: {len(bbox_dict)} registros válidos")
         if invalid_rows > 0:
-            print(f"⚠️  Linhas bbox inválidas ignoradas: {invalid_rows}")
+            print(f"[WARN] Linhas bbox inválidas ignoradas: {invalid_rows}")
         
         # Processa vetorcoluna
-        print(f"\n🔄 Processando vetorcoluna...")
+        print(f"\n[STEP] Processando vetorcoluna...")
         vetorcoluna_file = current_dir / silhueta_files[f'{view}_vetorcoluna']
         if vetorcoluna_file.exists():
             silhueta_data = read_csv(vetorcoluna_file)
             if len(silhueta_data) < 2:
-                print(f"❌ Arquivo vetorcoluna vazio: {vetorcoluna_file}")
+                print(f"[ERROR] Arquivo vetorcoluna vazio: {vetorcoluna_file}")
             else:
                 header = silhueta_data[0]
                 rows = silhueta_data[1:]
@@ -172,38 +172,38 @@ def process_parametrization():
                                     parametrized_data.append([id_key] + reparametrized)
                                     processed_count += 1
                                     if processed_count <= 10 or processed_count % 100 == 0:
-                                        print(f"  ✅ Processado {id_key}: x1={x1}->{x1_clamped}, x2={x2}->{x2_clamped}, dados originais={len_data}")
+                                        print(f"  [OK] Processado {id_key}: x1={x1}->{x1_clamped}, x2={x2}->{x2_clamped}, dados originais={len_data}")
                                 else:
                                     error_count += 1
                                     if error_count <= 5:
-                                        print(f"  ❌ Erro reparametrizando {id_key}: intervalo vazio")
+                                        print(f"  [ERROR] Erro reparametrizando {id_key}: intervalo vazio")
                             else:
                                 error_count += 1
                                 if error_count <= 5:
-                                    print(f"  ❌ Erro com {id_key}: x1={x1}, x2={x2}, len_data={len_data} (após clamp x1={x1_clamped}, x2={x2_clamped})")
+                                    print(f"  [ERROR] Erro com {id_key}: x1={x1}, x2={x2}, len_data={len_data} (após clamp x1={x1_clamped}, x2={x2_clamped})")
                         else:
                             not_found_count += 1
                             if not_found_count <= 10:
-                                print(f"  ⚠️  ID não encontrado no bbox: {id_key}")
+                                print(f"  [WARN] ID não encontrado no bbox: {id_key}")
                 
                 # Salva arquivo parametrizado
                 output_file = current_dir / output_files[f'{view}_vetorcoluna']
                 write_csv(output_file, parametrized_data)
-                print(f"💾 Arquivo gerado: {output_file}")
-                print(f"  ✅ {processed_count} registros processados com sucesso")
-                print(f"  ❌ {error_count} registros com erro de processamento")
-                print(f"  ⚠️  {not_found_count} IDs não encontrados no bbox")
-                print(f"  📊 Total de linhas no arquivo de entrada: {len(rows)}")
+                print(f"[SAVED] Arquivo gerado: {output_file}")
+                print(f"  [OK] {processed_count} registros processados com sucesso")
+                print(f"  [ERROR] {error_count} registros com erro de processamento")
+                print(f"  [WARN] {not_found_count} IDs não encontrados no bbox")
+                print(f"  [INFO] Total de linhas no arquivo de entrada: {len(rows)}")
         else:
-            print(f"❌ Arquivo não encontrado: {vetorcoluna_file}")
+            print(f"[ERROR] Arquivo não encontrado: {vetorcoluna_file}")
         
         # Processa vetorlinha
-        print(f"\n🔄 Processando vetorlinha...")
+        print(f"\n[STEP] Processando vetorlinha...")
         vetorlinha_file = current_dir / silhueta_files[f'{view}_vetorlinha']
         if vetorlinha_file.exists():
             silhueta_data = read_csv(vetorlinha_file)
             if len(silhueta_data) < 2:
-                print(f"❌ Arquivo vetorlinha vazio: {vetorlinha_file}")
+                print(f"[ERROR] Arquivo vetorlinha vazio: {vetorlinha_file}")
             else:
                 header = silhueta_data[0]
                 rows = silhueta_data[1:]
@@ -236,33 +236,33 @@ def process_parametrization():
                                     parametrized_data.append([id_key] + reparametrized)
                                     processed_count += 1
                                     if processed_count <= 10 or processed_count % 100 == 0:  # Mostra apenas alguns logs
-                                        print(f"  ✅ Processado {id_key}: y2={y2}->{y2_clamped}, y3={y3}->{y3_clamped}, dados originais={len_data}")
+                                        print(f"  [OK] Processado {id_key}: y2={y2}->{y2_clamped}, y3={y3}->{y3_clamped}, dados originais={len_data}")
                                 else:
                                     error_count += 1
                                     if error_count <= 5:
-                                        print(f"  ❌ Erro reparametrizando {id_key}: intervalo vazio")
+                                        print(f"  [ERROR] Erro reparametrizando {id_key}: intervalo vazio")
                             else:
                                 error_count += 1
                                 if error_count <= 5:
-                                    print(f"  ❌ Erro com {id_key}: y2={y2}, y3={y3}, len_data={len_data} (após clamp y2={y2_clamped}, y3={y3_clamped})")
+                                    print(f"  [ERROR] Erro com {id_key}: y2={y2}, y3={y3}, len_data={len_data} (após clamp y2={y2_clamped}, y3={y3_clamped}, intervalo=({y2_clamped}, {y3_clamped}])")
                         else:
                             not_found_count += 1
                             if not_found_count <= 10:
-                                print(f"  ⚠️  ID não encontrado no bbox: {id_key}")
+                                print(f"  [WARN] ID não encontrado no bbox: {id_key}")
                 
                 # Salva arquivo parametrizado
                 output_file = current_dir / output_files[f'{view}_vetorlinha']
                 write_csv(output_file, parametrized_data)
-                print(f"💾 Arquivo gerado: {output_file}")
-                print(f"  ✅ {processed_count} registros processados com sucesso")
-                print(f"  ❌ {error_count} registros com erro de processamento")
-                print(f"  ⚠️  {not_found_count} IDs não encontrados no bbox")
-                print(f"  📊 Total de linhas no arquivo de entrada: {len(rows)}")
+                print(f"[SAVED] Arquivo gerado: {output_file}")
+                print(f"  [OK] {processed_count} registros processados com sucesso")
+                print(f"  [ERROR] {error_count} registros com erro de processamento")
+                print(f"  [WARN] {not_found_count} IDs não encontrados no bbox")
+                print(f"  [INFO] Total de linhas no arquivo de entrada: {len(rows)}")
         else:
-            print(f"❌ Arquivo não encontrado: {vetorlinha_file}")
+            print(f"[ERROR] Arquivo não encontrado: {vetorlinha_file}")
     
     print(f"\n{'='*60}")
-    print("🎉 Processamento concluído!")
+    print("[DONE] Processamento concluído!")
     print(f"{'='*60}")
 
 if __name__ == "__main__":
